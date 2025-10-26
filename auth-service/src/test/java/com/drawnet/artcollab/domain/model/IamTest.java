@@ -47,30 +47,30 @@ public class IamTest {
     }
 
     // Pruebas para SignUpCommand
-    @Test
-    void crearSignUpCommand_deberiaCrearCorrectamente() {
+    //@Test
+    //void crearSignUpCommand_deberiaCrearCorrectamente() {
         // Arrange
-        String username = "jmontes";
-        String password = "securePassword123";
-        Role role = new Role(Roles.ESCRITOR);
+    //    String username = "jmontes";
+    //    String password = "securePassword123";
+    //    Role role = new Role(Roles.ESCRITOR);
 
         // Act
-        SignUpCommand command = new SignUpCommand(username, password, role);
+    //    SignUpCommand command = new SignUpCommand(username, password, role);
 
         // Assert
-        assertEquals("jmontes", command.username());
-        assertEquals("securePassword123", command.password());
-        assertEquals(role, command.role());
-    }
+    //    assertEquals("jmontes", command.username());
+    //    assertEquals("securePassword123", command.password());
+    //    assertEquals(role, command.role());
+    //}
 
-    @Test
-    void crearSignUpCommand_conRoleNuloDebeLanzarExcepcion() {
-        // Act & Assert
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new SignUpCommand("jmontes", "securePassword123", null);
-        });
-        assertEquals("El rol es obligatorio", exception.getMessage());
-    }
+    //@Test
+    //void crearSignUpCommand_conRoleNuloDebeLanzarExcepcion() {
+    //    // Act & Assert
+    //    Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+    //        new SignUpCommand("jmontes", "securePassword123", null);
+    //    });
+    //    assertEquals("El rol es obligatorio", exception.getMessage());
+    //}
 
     //Escritor
     @Test

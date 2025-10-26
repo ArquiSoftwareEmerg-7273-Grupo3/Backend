@@ -6,6 +6,7 @@ import com.drawnet.artcollab.iam.application.internal.outboundservices.tokens.To
 import com.drawnet.artcollab.iam.domain.model.aggregates.User;
 import com.drawnet.artcollab.iam.domain.model.commands.SignInCommand;
 import com.drawnet.artcollab.iam.domain.model.commands.SignUpCommand;
+import com.drawnet.artcollab.iam.domain.model.valueobjects.Roles;
 import com.drawnet.artcollab.iam.domain.services.UserCommandService;
 import com.drawnet.artcollab.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.drawnet.artcollab.iam.infrastructure.persistence.jpa.repositories.UserRepository;
@@ -16,6 +17,8 @@ import java.util.Optional;
 
 @Service
 public class UserCommandServiceImpl implements UserCommandService {
+    private static final Roles DEFAULT_ROLE = Roles.USER;
+
     private final UserRepository userRepository;
     private final HashingService hashingService;
     private final TokenService tokenService;
@@ -32,9 +35,16 @@ public class UserCommandServiceImpl implements UserCommandService {
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username()))
             throw new RuntimeException("Username already exists");
-        if (!roleRepository.existsByName(command.role().getName()))
+        if (!roleRepository.existsByName(DEFAULT_ROLE))
             throw new RuntimeException("Role doesnt exists");
-        var user = new User(command.username(), hashingService.encode(command.password()), roleRepository.findByName(command.role().getName()).get());
+
+        var role = roleRepository.findByName(DEFAULT_ROLE)
+                .orElseThrow(() -> new RuntimeException("Default role not found"));
+
+        var user = new User(command.username(), hashingService.encode(command.password()), role,
+        command.ubicacion(), command.nombres(), command.apellidos(), command.telefono(),
+        command.foto(), command.descripcion(), command.fechaNacimiento(), command.redesSociales()
+        );
         userRepository.save(user);
         return userRepository.findByUsername(command.username());
     }
