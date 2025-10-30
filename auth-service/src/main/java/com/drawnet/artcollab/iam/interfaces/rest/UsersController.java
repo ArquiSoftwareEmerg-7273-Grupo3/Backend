@@ -4,19 +4,21 @@ import com.drawnet.artcollab.iam.domain.model.aggregates.User;
 import com.drawnet.artcollab.iam.domain.model.queries.GetAllUsersQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdAndRolQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdQuery;
+import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdWithProfilesQuery;
 import com.drawnet.artcollab.iam.domain.services.UserQueryService;
 import com.drawnet.artcollab.iam.interfaces.rest.resources.UserResource;
 import com.drawnet.artcollab.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/v1/users", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -55,6 +57,36 @@ public class UsersController {
         if (user.isEmpty()) return ResponseEntity.notFound().build();
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
         return ResponseEntity.ok(userResource);
+    }
+
+    /**
+     * Endpoint para obtener toda la información del usuario autenticado
+     * Incluye datos básicos + perfiles de ilustrador/escritor si existen
+     */
+    @GetMapping("/me")
+    public ResponseEntity<UserResource> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        // Extraer el userId del token JWT
+        Long userId = extractUserIdFromUserDetails(userDetails);
+        
+        // Buscar el usuario con toda su información incluyendo perfiles
+        var getUserWithProfilesQuery = new GetUserByIdWithProfilesQuery(userId);
+        var user = userQueryService.handle(getUserWithProfilesQuery);
+        
+        if (user.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Convertir a resource con toda la información
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+        return ResponseEntity.ok(userResource);
+    }
+
+    // Método auxiliar para extraer userId del UserDetails
+    private Long extractUserIdFromUserDetails(UserDetails userDetails) {
+        if (userDetails instanceof com.drawnet.artcollab.iam.infrastructure.authorization.sfs.model.UserDetailsImpl userDetailsImpl) {
+            return userDetailsImpl.getUserId();
+        }
+        throw new IllegalArgumentException("No se pudo obtener el ID del usuario del token");
     }
 
 

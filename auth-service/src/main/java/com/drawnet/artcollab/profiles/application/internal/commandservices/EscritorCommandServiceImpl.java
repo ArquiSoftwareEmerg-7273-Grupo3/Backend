@@ -1,6 +1,8 @@
 package com.drawnet.artcollab.profiles.application.internal.commandservices;
 
 import com.drawnet.artcollab.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import com.drawnet.artcollab.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
+import com.drawnet.artcollab.iam.domain.model.valueobjects.Roles;
 import com.drawnet.artcollab.profiles.domain.model.aggregates.Escritor;
 import com.drawnet.artcollab.profiles.domain.model.commands.CreateEscritorCommand;
 import com.drawnet.artcollab.profiles.domain.services.EscritorCommandService;
@@ -13,10 +15,12 @@ import java.util.Optional;
 public class EscritorCommandServiceImpl implements EscritorCommandService {
     private final EscritorRepository escritorRepository;
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
-    public EscritorCommandServiceImpl(EscritorRepository escritorRepository, UserRepository userRepository) {
+    public EscritorCommandServiceImpl(EscritorRepository escritorRepository, UserRepository userRepository, RoleRepository roleRepository) {
         this.escritorRepository = escritorRepository;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -34,9 +38,16 @@ public class EscritorCommandServiceImpl implements EscritorCommandService {
             throw new IllegalArgumentException("El usuario ya tiene un perfil de escritor");
         }
         
-        // Crear el escritor con la relación al usuario
-        var escritor = new Escritor(command, user);
-        escritorRepository.save(escritor);
-        return Optional.of(escritor);
+    // Crear el escritor con la relación al usuario
+    var escritor = new Escritor(command, user);
+    escritorRepository.save(escritor);
+
+    // Cambiar rol del usuario a ESCRITOR
+    var role = roleRepository.findByName(Roles.ESCRITOR)
+        .orElseThrow(() -> new RuntimeException("Role ESCRITOR no encontrado"));
+    user.setRole(role);
+    userRepository.save(user);
+
+    return Optional.of(escritor);
     }
 }

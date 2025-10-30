@@ -17,7 +17,7 @@ import java.util.Optional;
 
 @Service
 public class UserCommandServiceImpl implements UserCommandService {
-    private static final Roles DEFAULT_ROLE = Roles.USER;
+    private static final Roles DEFAULT_ROLE = Roles.GENERAL;
 
     private final UserRepository userRepository;
     private final HashingService hashingService;

@@ -114,6 +114,10 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     public Role getRole() {
         return role;
     }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
     public String getUsername() {
         return username;
     }
