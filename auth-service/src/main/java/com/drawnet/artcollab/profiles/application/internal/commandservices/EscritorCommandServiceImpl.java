@@ -1,5 +1,6 @@
 package com.drawnet.artcollab.profiles.application.internal.commandservices;
 
+import com.drawnet.artcollab.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import com.drawnet.artcollab.profiles.domain.model.aggregates.Escritor;
 import com.drawnet.artcollab.profiles.domain.model.commands.CreateEscritorCommand;
 import com.drawnet.artcollab.profiles.domain.services.EscritorCommandService;
@@ -11,14 +12,30 @@ import java.util.Optional;
 @Service
 public class EscritorCommandServiceImpl implements EscritorCommandService {
     private final EscritorRepository escritorRepository;
+    private final UserRepository userRepository;
 
-    public EscritorCommandServiceImpl(EscritorRepository escritorRepository) {
+    public EscritorCommandServiceImpl(EscritorRepository escritorRepository, UserRepository userRepository) {
         this.escritorRepository = escritorRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public Optional<Escritor> handle(CreateEscritorCommand command) {
-        var escritor = new Escritor(command);
+        // Buscar el usuario por ID
+        var userOpt = userRepository.findById(command.userId());
+        if (userOpt.isEmpty()) {
+            throw new IllegalArgumentException("Usuario con ID " + command.userId() + " no encontrado");
+        }
+        
+        var user = userOpt.get();
+        
+        // Verificar que el usuario no tenga ya un perfil de escritor
+        if (user.isEscritor()) {
+            throw new IllegalArgumentException("El usuario ya tiene un perfil de escritor");
+        }
+        
+        // Crear el escritor con la relación al usuario
+        var escritor = new Escritor(command, user);
         escritorRepository.save(escritor);
         return Optional.of(escritor);
     }

@@ -71,6 +71,13 @@ public class User extends AuditableAbstractAggregateRoot<User> {
     @JoinColumn(name = "id_rol")
     private Role role;
 
+    // Relaciones opcionales con perfiles especializados
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private com.drawnet.artcollab.profiles.domain.model.aggregates.Ilustrador ilustrador;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private com.drawnet.artcollab.profiles.domain.model.aggregates.Escritor escritor;
+
 
     public User(){}
 
@@ -149,5 +156,27 @@ public class User extends AuditableAbstractAggregateRoot<User> {
 
     public Map<String, String> getRedesSociales() {
         return redesSociales;
+    }
+
+    // Getters para perfiles especializados
+    public com.drawnet.artcollab.profiles.domain.model.aggregates.Ilustrador getIlustrador() {
+        return ilustrador;
+    }
+
+    public com.drawnet.artcollab.profiles.domain.model.aggregates.Escritor getEscritor() {
+        return escritor;
+    }
+
+    // Métodos de utilidad para verificar tipo de perfil
+    public boolean isIlustrador() {
+        return ilustrador != null;
+    }
+
+    public boolean isEscritor() {
+        return escritor != null;
+    }
+
+    public boolean hasSpecializedProfile() {
+        return isIlustrador() || isEscritor();
     }
 }

@@ -5,15 +5,16 @@ import com.drawnet.artcollab.profiles.domain.model.commands.CreateEscritorComman
 import com.drawnet.artcollab.profiles.interfaces.rest.resources.CreateEscritorResource;
 
 public class CreateEscritorCommandFromResourceAssembler {
-    public static CreateEscritorCommand toCommandFromResource(CreateEscritorResource resource) {
+    public static CreateEscritorCommand toCommandFromResource(CreateEscritorResource resource, Long userId) {
         return new CreateEscritorCommand(
-                resource.firstName(),
-                resource.lastName(),
-                resource.biografia(),
-                resource.foto(),
-                resource.redes(),
-                resource.suscripcion(),
-                resource.userId()
+                resource.razonSocial(),
+                resource.ruc(),
+                resource.nombreComercial(),
+                resource.sitioWeb(),
+                resource.logo(),
+                resource.ubicacionEmpresa(),
+                resource.tipoEmpresa(),
+                userId // Se obtiene del token JWT
         );
     }
 }

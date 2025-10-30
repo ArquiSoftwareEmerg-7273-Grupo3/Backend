@@ -2,9 +2,7 @@ package com.drawnet.artcollab.profiles.domain.model.aggregates;
 
 
 import com.drawnet.artcollab.iam.domain.model.aggregates.User;
-
 import com.drawnet.artcollab.profiles.domain.model.commands.CreateEscritorCommand;
-import com.drawnet.artcollab.profiles.domain.model.valueobjects.PersonName;
 import com.drawnet.artcollab.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,51 +11,79 @@ import lombok.Getter;
 @Entity
 public class Escritor extends AuditableAbstractAggregateRoot<Escritor> {
 
-    private Long userId;
+    // Relación bidireccional con User
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
-    @Embedded
-    private PersonName nombre;
+    @Column(name = "razon_social")
+    private String razonSocial; // no obligatorio
 
-    private String biografia;
+    @Column(name = "ruc")
+    private String ruc; // no obligatorio
 
-    @Column(name = "foto_perfil")
-    private String foto;
+    @Column(name = "nombre_comercial")
+    private String nombreComercial; // no obligatorio
 
-    @Column(name = "redes_sociales")
-    private String redes;
+    @Column(name = "sitio_web")
+    private String sitioWeb; // no obligatorio
 
-    private Long suscripcion;
+    @Column(name = "logo")
+    private String logo; // no obligatorio
+
+    @Column(name = "ubicacion_empresa")
+    private String ubicacionEmpresa; // no obligatorio
+
+    @Column(name = "tipo_empresa")
+    private String tipoEmpresa; // no obligatorio
 
     public Escritor(){}
 
-    public Escritor(CreateEscritorCommand command) {
-        this.nombre = new PersonName(command.firstName(), command.lastName());
-        this.biografia = command.biografia();
-        this.foto = command.foto();
-        this.redes = command.redes();
-        this.suscripcion = command.suscripcion();
-        this.userId = command.userId();
+    public Escritor(CreateEscritorCommand command, User user) {
+        this.razonSocial = command.razonSocial();
+        this.ruc = command.ruc();
+        this.nombreComercial = command.nombreComercial();
+        this.sitioWeb = command.sitioWeb();
+        this.logo = command.logo();
+        this.ubicacionEmpresa = command.ubicacionEmpresa();
+        this.tipoEmpresa = command.tipoEmpresa();
+        this.user = user;
     }
 
-    public String getFullName() {
-        return nombre.getFullName();
+    public String getRazonSocial() {
+        return razonSocial;
     }
 
-
-    public String getBiografia() {
-        return biografia;
+    public String getRuc() {
+        return ruc;
     }
 
-    public String getFoto() {
-        return foto;
+    public String getNombreComercial() {
+        return nombreComercial;
     }
 
-    public String getRedes() {
-        return redes;
+    public String getSitioWeb() {
+        return sitioWeb;
     }
 
-    public Long getSuscripcion() {
-        return suscripcion;
+    public String getLogo() {
+        return logo;
+    }
+
+    public String getUbicacionEmpresa() {
+        return ubicacionEmpresa;
+    }
+
+    public String getTipoEmpresa() {
+        return tipoEmpresa;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
     }
 }
 

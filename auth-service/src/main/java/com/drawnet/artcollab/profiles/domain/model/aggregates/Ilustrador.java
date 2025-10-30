@@ -2,9 +2,7 @@ package com.drawnet.artcollab.profiles.domain.model.aggregates;
 
 
 import com.drawnet.artcollab.iam.domain.model.aggregates.User;
-import com.drawnet.artcollab.profiles.domain.model.commands.CreateEscritorCommand;
 import com.drawnet.artcollab.profiles.domain.model.commands.CreateIlustradorCommand;
-import com.drawnet.artcollab.profiles.domain.model.valueobjects.PersonName;
 import com.drawnet.artcollab.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -13,50 +11,48 @@ import lombok.Getter;
 @Getter
 public class Ilustrador extends AuditableAbstractAggregateRoot<Ilustrador> {
 
-    private Long userId;
+    // Relación bidireccional con User
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
-    @Embedded
-    private PersonName nombre;
+    @Column(name = "nombre_artistico")
+    private String nombreArtistico;
 
-    private String biografia;
-
-    @Column(name = "foto_perfil")
-    private String foto;
-
-    @Column(name = "redes_sociales")
-    private String redes;
-
-    private Long suscripcion;
+    @Column(name = "subscripcion")
+    private Boolean subscripcion = false;  // Siempre inicia en false
 
     public Ilustrador() {}
 
-    public Ilustrador(CreateIlustradorCommand command) {
-        this.nombre = new PersonName(command.firstName(), command.lastName());
-        this.biografia = command.biografia();
-        this.foto = command.foto();
-        this.redes = command.redes();
-        this.suscripcion = command.suscripcion();
-        this.userId = command.userId();
+    public Ilustrador(CreateIlustradorCommand command, User user) {
+        this.nombreArtistico = command.nombreArtistico();
+        this.subscripcion = false; // Siempre inicia en false
+        this.user = user;
     }
 
-
-    public String getFullName() {
-        return nombre.getFullName();
+    public String getNombreArtistico() {
+        return nombreArtistico;
     }
 
-    public String getBiografia() {
-        return biografia;
+    public Boolean getSubscripcion() {
+        return subscripcion;
     }
 
-    public String getFoto() {
-        return foto;
+    public User getUser() {
+        return user;
     }
 
-    public String getRedes() {
-        return redes;
+    public Long getUserId() {
+        return user != null ? user.getId() : null;
     }
 
-    public Long getSuscripcion() {
-        return suscripcion;
+    // Método para activar suscripción
+    public void activarSubscripcion() {
+        this.subscripcion = true;
+    }
+
+    // Método para desactivar suscripción
+    public void desactivarSubscripcion() {
+        this.subscripcion = false;
     }
 }

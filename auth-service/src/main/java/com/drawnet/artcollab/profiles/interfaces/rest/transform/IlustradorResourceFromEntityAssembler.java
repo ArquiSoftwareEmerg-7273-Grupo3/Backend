@@ -6,13 +6,15 @@ import com.drawnet.artcollab.profiles.interfaces.rest.resources.IlustradorResour
 
 public class IlustradorResourceFromEntityAssembler {
     public static IlustradorResource toResourceFromEntity(Ilustrador entity) {
+        var user = entity.getUser();
         return new IlustradorResource(
                 entity.getId(),
-                entity.getFullName(),
-                entity.getBiografia(),
-                entity.getFoto(),
-                entity.getRedes(),
-                entity.getSuscripcion()
+                entity.getNombreArtistico(),
+                entity.getSubscripcion(),
+                user != null ? user.getId() : null,
+                user != null ? user.getUsername() : null,
+                user != null ? user.getNombres() : null,
+                user != null ? user.getApellidos() : null
         );
     }
 }

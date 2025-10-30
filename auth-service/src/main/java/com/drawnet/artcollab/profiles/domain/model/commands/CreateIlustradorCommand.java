@@ -1,9 +1,12 @@
 package com.drawnet.artcollab.profiles.domain.model.commands;
 
-public record CreateIlustradorCommand(String firstName, String lastName, String biografia, String foto, String redes, Long suscripcion, Long userId) {
+public record CreateIlustradorCommand(String nombreArtistico, Long userId) {
     public CreateIlustradorCommand {
-        if (firstName == null || firstName.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
+        if (nombreArtistico == null || nombreArtistico.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre artístico es obligatorio");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("El ID de usuario es obligatorio");
         }
     }
 }

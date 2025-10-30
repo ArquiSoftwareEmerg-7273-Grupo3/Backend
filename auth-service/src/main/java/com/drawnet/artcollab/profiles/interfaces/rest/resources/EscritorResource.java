@@ -1,5 +1,16 @@
 package com.drawnet.artcollab.profiles.interfaces.rest.resources;
 
-import com.drawnet.artcollab.iam.domain.model.aggregates.User;
-
-public record EscritorResource(Long id, String fullName, String biografia, String foto, String redes, Long suscripcion) {}
+public record EscritorResource(
+    Long id,
+    String razonSocial,
+    String ruc,
+    String nombreComercial,
+    String sitioWeb,
+    String logo,
+    String ubicacionEmpresa,
+    String tipoEmpresa,
+    Long userId,
+    String username,
+    String nombres,
+    String apellidos
+) {}

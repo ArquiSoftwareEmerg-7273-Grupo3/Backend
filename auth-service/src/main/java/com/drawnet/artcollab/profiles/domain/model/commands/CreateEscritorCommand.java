@@ -1,9 +1,18 @@
 package com.drawnet.artcollab.profiles.domain.model.commands;
 
-public record CreateEscritorCommand(String firstName, String lastName, String biografia, String foto, String redes, Long suscripcion, Long userId){
+public record CreateEscritorCommand(
+    String razonSocial,      // no obligatorio
+    String ruc,              // no obligatorio  
+    String nombreComercial,  // no obligatorio
+    String sitioWeb,         // no obligatorio
+    String logo,             // no obligatorio
+    String ubicacionEmpresa, // no obligatorio
+    String tipoEmpresa,      // no obligatorio
+    Long userId              // obligatorio
+) {
     public CreateEscritorCommand {
-        if (firstName == null || firstName.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
+        if (userId == null) {
+            throw new IllegalArgumentException("El ID de usuario es obligatorio");
         }
     }
 }

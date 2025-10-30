@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @EqualsAndHashCode
 public class UserDetailsImpl implements UserDetails {
+    private final Long userId;  // Agregamos el ID del usuario
     private final String username;
     @JsonIgnore
     private final String password;
@@ -24,7 +25,8 @@ public class UserDetailsImpl implements UserDetails {
     private final boolean enabled;
     private final GrantedAuthority authority;
 
-    public UserDetailsImpl(String username, String password, GrantedAuthority authority) {
+    public UserDetailsImpl(Long userId, String username, String password, GrantedAuthority authority) {
+        this.userId = userId;
         this.username = username;
         this.password = password;
         this.authority = authority;
@@ -36,7 +38,7 @@ public class UserDetailsImpl implements UserDetails {
 
     public static UserDetailsImpl build(User user) {
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().getStringName());
-        return new UserDetailsImpl(user.getUsername(), user.getPassword(), authority);
+        return new UserDetailsImpl(user.getId(), user.getUsername(), user.getPassword(), authority);
     }
 
     @Override
