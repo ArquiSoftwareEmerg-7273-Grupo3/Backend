@@ -1,13 +1,11 @@
 package com.drawnet.feed_service.domain.services;
 
-import com.drawnet.feed_service.domain.entities.Post;
-import com.drawnet.feed_service.domain.entities.Comment;
-import com.drawnet.feed_service.domain.entities.Reaction;
-import com.drawnet.feed_service.domain.entities.Repost;
-import com.drawnet.feed_service.domain.repositories.PostRepository;
-import com.drawnet.feed_service.domain.repositories.CommentRepository;
-import com.drawnet.feed_service.domain.repositories.ReactionRepository;
-import com.drawnet.feed_service.domain.repositories.RepostRepository;
+import com.drawnet.feed_service.domain.model.aggregates.Post;
+import com.drawnet.feed_service.domain.model.entities.Repost;
+import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.PostRepository;
+import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.CommentRepository;
+import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.ReactionRepository;
+import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.RepostRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -49,7 +47,10 @@ public class FeedDomainService {
         List<Post> followingPosts = postRepository.findByUserIdIn(followingUserIds);
         
         // 2. Obtener reposts de usuarios seguidos
-        List<Repost> followingReposts = repostRepository.findByUserIdIn(followingUserIds);
+        List<Long> followingUserIdsLong = followingUserIds.stream()
+                .map(Long::parseLong)
+                .toList();
+        List<Repost> followingReposts = repostRepository.findByUserIdIn(followingUserIdsLong);
         
         // 3. Combinar y ordenar por algoritmo de relevancia
         List<Post> combinedPosts = new ArrayList<>();
@@ -61,7 +62,7 @@ public class FeedDomainService {
         // 4. Eliminar duplicados y aplicar scoring
         List<Post> scoredPosts = combinedPosts.stream()
                 .distinct()
-                .filter(post -> !post.getUserId().equals(userId)) // No mostrar propios posts
+                .filter(post -> !post.getAuthorId().toString().equals(userId)) // No mostrar propios posts
                 .sorted((p1, p2) -> Double.compare(calculateRelevanceScore(p2, userId), calculateRelevanceScore(p1, userId)))
                 .collect(Collectors.toList());
 
@@ -82,7 +83,7 @@ public class FeedDomainService {
         // Factor de engagement
         double engagementScore = (post.getLikesCount() * 2) + 
                                (post.getCommentsCount() * 3) + 
-                               (post.getSharesCount() * 5);
+                               (post.getRepostsCount() * 5);
         
         // Factor de ratio engagement/tiempo
         double engagementRate = engagementScore / Math.max(1, hoursOld);
@@ -117,7 +118,7 @@ public class FeedDomainService {
         long hoursOld = java.time.Duration.between(post.getCreatedAt(), LocalDateTime.now()).toHours();
         if (hoursOld == 0) hoursOld = 1;
         
-        double totalEngagement = post.getLikesCount() + post.getCommentsCount() + post.getSharesCount();
+        double totalEngagement = post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount();
         double velocityScore = totalEngagement / hoursOld;
         
         // Boost para posts muy recientes
@@ -133,7 +134,7 @@ public class FeedDomainService {
         Map<String, Object> analysis = new HashMap<>();
         
         // Métricas básicas
-        analysis.put("totalEngagement", post.getLikesCount() + post.getCommentsCount() + post.getSharesCount());
+        analysis.put("totalEngagement", post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount());
         analysis.put("engagementRate", calculateEngagementRate(post));
         analysis.put("viralityScore", calculateViralityScore(post));
         
@@ -141,13 +142,13 @@ public class FeedDomainService {
         long hoursOld = java.time.Duration.between(post.getCreatedAt(), LocalDateTime.now()).toHours();
         analysis.put("hoursOld", hoursOld);
         analysis.put("avgEngagementPerHour", 
-                    (double)(post.getLikesCount() + post.getCommentsCount() + post.getSharesCount()) / Math.max(1, hoursOld));
+                    (double)(post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount()) / Math.max(1, hoursOld));
         
         // Distribución de engagement
         Map<String, Integer> engagementBreakdown = new HashMap<>();
         engagementBreakdown.put("likes", post.getLikesCount());
         engagementBreakdown.put("comments", post.getCommentsCount());
-        engagementBreakdown.put("shares", post.getSharesCount());
+        engagementBreakdown.put("reposts", post.getRepostsCount());
         analysis.put("engagementBreakdown", engagementBreakdown);
         
         return analysis;
@@ -165,7 +166,7 @@ public class FeedDomainService {
         }
         
         // Verificar spam por frecuencia
-        if (isSpamByFrequency(post.getUserId())) {
+        if (isSpamByFrequency(post.getAuthorId().toString())) {
             result.addFlag("SPAM_FREQUENCY", "Usuario publicando demasiado frecuentemente");
         }
         
@@ -182,14 +183,15 @@ public class FeedDomainService {
      */
     public List<Post> recommendContent(String userId, int limit) {
         // Obtener posts con los que el usuario ha interactuado
-        List<String> interactedPostIds = reactionRepository.findByUserId(userId)
+        Long userIdLong = Long.parseLong(userId);
+        List<String> interactedPostIds = reactionRepository.findByUserId(userIdLong)
                 .stream()
-                .map(reaction -> reaction.getPost().getId())
+                .map(reaction -> reaction.getPost().getId().toString())
                 .collect(Collectors.toList());
         
-        List<String> commentedPostIds = commentRepository.findByUserId(userId)
+        List<String> commentedPostIds = commentRepository.findByUserId(userIdLong)
                 .stream()
-                .map(comment -> comment.getPost().getId())
+                .map(comment -> comment.getPost().getId().toString())
                 .collect(Collectors.toList());
         
         Set<String> allInteractedPostIds = new HashSet<>();
@@ -207,8 +209,8 @@ public class FeedDomainService {
         // Recomendar posts de usuarios similares que el usuario no ha visto
         return postRepository.findByUserIdIn(similarUsers)
                 .stream()
-                .filter(post -> !post.getUserId().equals(userId))
-                .filter(post -> !allInteractedPostIds.contains(post.getId()))
+                .filter(post -> !post.getAuthorId().toString().equals(userId))
+                .filter(post -> !allInteractedPostIds.contains(post.getId().toString()))
                 .sorted((p1, p2) -> Double.compare(calculateRelevanceScore(p2, userId), calculateRelevanceScore(p1, userId)))
                 .limit(limit)
                 .collect(Collectors.toList());
@@ -218,20 +220,20 @@ public class FeedDomainService {
     
     private double calculateEngagementRate(Post post) {
         // Asumir que las vistas están en algún lugar o usar una fórmula alternativa
-        int totalInteractions = post.getLikesCount() + post.getCommentsCount() + post.getSharesCount();
+        int totalInteractions = post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount();
         // Como no tenemos vistas, usar una heurística basada en followers o tiempo
         return totalInteractions > 0 ? totalInteractions / 100.0 : 0.0;
     }
     
     private double calculateViralityScore(Post post) {
         long hoursOld = java.time.Duration.between(post.getCreatedAt(), LocalDateTime.now()).toHours();
-        double totalEngagement = post.getLikesCount() + post.getCommentsCount() + post.getSharesCount();
+        double totalEngagement = post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount();
         
         if (hoursOld <= 0) hoursOld = 1;
         
         double velocity = totalEngagement / hoursOld;
-        double shareRatio = post.getSharesCount() > 0 ? 
-                          (double) post.getSharesCount() / totalEngagement : 0;
+        double shareRatio = post.getRepostsCount() > 0 ? 
+                          (double) post.getRepostsCount() / totalEngagement : 0;
         
         return velocity * (1 + shareRatio * 2); // Los shares tienen peso extra
     }
@@ -239,7 +241,7 @@ public class FeedDomainService {
     private boolean isDuplicateContent(Post post) {
         // Buscar posts similares en las últimas 24 horas
         LocalDateTime since = LocalDateTime.now().minusHours(24);
-        return postRepository.findByUserIdAndCreatedAtAfter(post.getUserId(), since)
+        return postRepository.findByUserIdAndCreatedAtAfter(post.getAuthorId(), since)
                 .stream()
                 .anyMatch(existingPost -> 
                     !existingPost.getId().equals(post.getId()) && 
@@ -265,14 +267,15 @@ public class FeedDomainService {
         Map<String, Integer> userSimilarityScore = new HashMap<>();
         
         for (String postId : userInteractedPosts) {
-            List<String> usersWhoInteracted = reactionRepository.findByPostId(postId)
+            Long postIdLong = Long.parseLong(postId);
+            List<String> usersWhoInteracted = reactionRepository.findByPostId(postIdLong)
                     .stream()
-                    .map(Reaction::getUserId)
+                    .map(reaction -> reaction.getUserId().toString())
                     .filter(uid -> !uid.equals(userId))
                     .collect(Collectors.toList());
             
             for (String similarUserId : usersWhoInteracted) {
-                userSimilarityScore.merge(similarUserId, 1, Integer::sum);
+                userSimilarityScore.merge(similarUserId, 1, (a, b) -> a + b);
             }
         }
         

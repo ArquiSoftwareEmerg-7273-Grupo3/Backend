@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,12 +44,6 @@ public class Comment extends AuditableModel {
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> replies = new ArrayList<>();
     
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
     @Column(name = "active", nullable = false)
     private boolean active = true;
     
@@ -59,8 +52,6 @@ public class Comment extends AuditableModel {
         this.userId = userId;
         this.content = content;
         this.post = post;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
     
     public Comment(Long userId, String content, Post post, Comment parentComment) {
@@ -68,19 +59,7 @@ public class Comment extends AuditableModel {
         this.parentComment = parentComment;
     }
     
-    // Lifecycle methods
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    // Lifecycle methods no necesarios - heredados de AuditableModel
     
     // Setters
     public void setPost(Post post) { 
@@ -88,8 +67,7 @@ public class Comment extends AuditableModel {
     }
     
     public void updateContent(String content) { 
-        this.content = content; 
-        this.updatedAt = LocalDateTime.now();
+        this.content = content;
     }
     
     // Business methods
@@ -117,12 +95,10 @@ public class Comment extends AuditableModel {
     
     public void deactivate() {
         this.active = false;
-        this.updatedAt = LocalDateTime.now();
     }
     
     public void activate() {
         this.active = true;
-        this.updatedAt = LocalDateTime.now();
     }
     
     // Getters defensivos

@@ -14,7 +14,7 @@ public class PostResourceFromEntityAssembler {
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),
                 entity.isActive(),
-                entity.getLikesCount(),
+                entity.getReactionsCount(),
                 entity.getCommentsCount(),
                 entity.getRepostsCount(),
                 entity.getViewsCount(),

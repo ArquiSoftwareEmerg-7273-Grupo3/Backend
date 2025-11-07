@@ -49,4 +49,11 @@ public interface RepostRepository extends JpaRepository<Repost, Long> {
     
     // Eliminar repost
     void deleteByOriginalPostIdAndUserId(Long originalPostId, Long userId);
+    
+    // Buscar reposts por usuario
+    List<Repost> findByUserId(Long userId);
+    
+    // Buscar reposts por lista de usuarios
+    List<Repost> findByUserIdIn(List<Long> userIds);
 }
+

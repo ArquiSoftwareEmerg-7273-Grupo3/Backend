@@ -1,7 +1,8 @@
 package com.drawnet.feed_service.domain.services;
 
-import com.drawnet.feed_service.domain.entities.Post;
-import com.drawnet.feed_service.domain.entities.Media;
+import com.drawnet.feed_service.domain.model.aggregates.Post;
+import com.drawnet.feed_service.domain.model.entities.Media;
+import com.drawnet.feed_service.domain.model.entities.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +33,7 @@ public class MediaValidationService {
             "audio/mp3", "audio/wav", "audio/ogg", "audio/m4a"
     );
     
+    // NOTA: AUDIO se mapea a DOCUMENT temporalmente hasta que se agregue al enum
     private static final long MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     private static final long MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
     private static final long MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
@@ -58,7 +60,7 @@ public class MediaValidationService {
         }
         
         // Validar tipo de archivo
-        Media.MediaType mediaType = determineMediaType(contentType);
+        MediaType mediaType = determineMediaType(contentType);
         if (mediaType == null) {
             result.addError("UNSUPPORTED_TYPE", "Tipo de archivo no soportado: " + contentType);
             return result;
@@ -147,7 +149,7 @@ public class MediaValidationService {
         
         for (Media media : post.getMediaFiles()) {
             MediaIntegrityCheck check = validateMediaIntegrity(media);
-            result.addMediaCheck(media.getId(), check);
+            result.addMediaCheck(media.getId().toString(), check);
             
             if (!check.isValid()) {
                 result.setValid(false);
@@ -175,22 +177,22 @@ public class MediaValidationService {
 
     // Métodos auxiliares privados
     
-    private Media.MediaType determineMediaType(String contentType) {
+    private MediaType determineMediaType(String contentType) {
         if (ALLOWED_IMAGE_TYPES.contains(contentType)) {
-            return Media.MediaType.IMAGE;
+            return MediaType.IMAGE;
         } else if (ALLOWED_VIDEO_TYPES.contains(contentType)) {
-            return Media.MediaType.VIDEO;
+            return MediaType.VIDEO;
         } else if (ALLOWED_AUDIO_TYPES.contains(contentType)) {
-            return Media.MediaType.AUDIO;
+            return MediaType.DOCUMENT; // AUDIO se mapea a DOCUMENT temporalmente
         }
         return null;
     }
     
-    private boolean validateFileSize(long size, Media.MediaType mediaType) {
+    private boolean validateFileSize(long size, MediaType mediaType) {
         return switch (mediaType) {
             case IMAGE -> size <= MAX_IMAGE_SIZE;
             case VIDEO -> size <= MAX_VIDEO_SIZE;
-            case AUDIO -> size <= MAX_AUDIO_SIZE;
+            case DOCUMENT -> size <= MAX_AUDIO_SIZE; // Incluye AUDIO
         };
     }
     
@@ -222,25 +224,25 @@ public class MediaValidationService {
     }
     
     private void validateMediaTypeCombination(MediaCollectionValidationResult result) {
-        Set<Media.MediaType> types = result.getValidFiles().values().stream()
+        Set<MediaType> types = result.getValidFiles().values().stream()
                 .collect(Collectors.toSet());
         
         // Reglas de negocio para combinaciones
-        if (types.contains(Media.MediaType.VIDEO) && types.size() > 1) {
+        if (types.contains(MediaType.VIDEO) && types.size() > 1) {
             result.addError("MIXED_WITH_VIDEO", "No se pueden combinar videos con otros tipos de media");
         }
         
-        if (types.contains(Media.MediaType.AUDIO) && types.contains(Media.MediaType.IMAGE)) {
-            // Audio + imágenes está permitido
+        if (types.contains(MediaType.DOCUMENT) && types.contains(MediaType.IMAGE)) {
+            // Document/Audio + imágenes está permitido
         }
     }
     
     private MediaIntegrityCheck validateMediaIntegrity(Media media) {
         MediaIntegrityCheck check = new MediaIntegrityCheck();
-        check.setMediaId(media.getId());
+        check.setMediaId(media.getId().toString());
         
         // Verificar que el archivo existe
-        Path filePath = Paths.get(media.getUrl());
+        Path filePath = Paths.get(media.getFileUrl());
         if (!Files.exists(filePath)) {
             check.addIssue("FILE_NOT_FOUND", "Archivo no encontrado en el sistema");
         }
@@ -250,8 +252,9 @@ public class MediaValidationService {
             check.addIssue("INVALID_SIZE", "Tamaño de archivo inválido");
         }
         
-        if (media.getMimeType() == null || media.getMimeType().trim().isEmpty()) {
-            check.addIssue("MISSING_MIME_TYPE", "Tipo MIME faltante");
+        // El MediaType ya está validado en la entidad Media
+        if (media.getMediaType() == null) {
+            check.addIssue("MISSING_MEDIA_TYPE", "Tipo de media faltante");
         }
         
         check.setValid(check.getIssues().isEmpty());
@@ -262,7 +265,7 @@ public class MediaValidationService {
     
     public static class MediaValidationResult {
         private boolean valid = false;
-        private Media.MediaType mediaType;
+        private MediaType mediaType;
         private final Map<String, String> errors = new HashMap<>();
         
         public void addError(String code, String message) {
@@ -272,8 +275,8 @@ public class MediaValidationService {
         // Getters y setters
         public boolean isValid() { return valid; }
         public void setValid(boolean valid) { this.valid = valid; }
-        public Media.MediaType getMediaType() { return mediaType; }
-        public void setMediaType(Media.MediaType mediaType) { this.mediaType = mediaType; }
+        public MediaType getMediaType() { return mediaType; }
+        public void setMediaType(MediaType mediaType) { this.mediaType = mediaType; }
         public Map<String, String> getErrors() { return errors; }
     }
     
@@ -281,7 +284,7 @@ public class MediaValidationService {
         private boolean valid = true;
         private final Map<String, String> errors = new HashMap<>();
         private final Map<Integer, Map<String, String>> fileErrors = new HashMap<>();
-        private final Map<Integer, Media.MediaType> validFiles = new HashMap<>();
+        private final Map<Integer, MediaType> validFiles = new HashMap<>();
         
         public void addError(String code, String message) {
             errors.put(code, message);
@@ -293,7 +296,7 @@ public class MediaValidationService {
             valid = false;
         }
         
-        public void addValidFile(int fileIndex, Media.MediaType mediaType) {
+        public void addValidFile(int fileIndex, MediaType mediaType) {
             validFiles.put(fileIndex, mediaType);
         }
         
@@ -302,7 +305,7 @@ public class MediaValidationService {
         public void setValid(boolean valid) { this.valid = valid; }
         public Map<String, String> getErrors() { return errors; }
         public Map<Integer, Map<String, String>> getFileErrors() { return fileErrors; }
-        public Map<Integer, Media.MediaType> getValidFiles() { return validFiles; }
+        public Map<Integer, MediaType> getValidFiles() { return validFiles; }
     }
     
     public static class MediaIntegrityResult {

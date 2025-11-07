@@ -35,8 +35,8 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins(allowedOrigins)
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
                 .allowedMethods(allowedMethods)
                 .allowedHeaders(allowedHeaders)
                 .allowCredentials(allowCredentials)
@@ -47,9 +47,10 @@ public class CorsConfig implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOrigins));
+        // Permitir todos los orígenes en desarrollo
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList(allowedMethods));
-        configuration.setAllowedHeaders(Arrays.asList(allowedHeaders));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(maxAge);
         
@@ -59,7 +60,8 @@ public class CorsConfig implements WebMvcConfigurer {
                 "X-Page-Number", 
                 "X-Page-Size",
                 "X-Total-Pages",
-                "Content-Disposition"
+                "Content-Disposition",
+                "Authorization"
         ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -22,9 +22,6 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     // Contar reacciones por tipo en un post
     long countByPostIdAndType(Long postId, ReactionType type);
     
-    // Contar likes de un post
-    long countByPostIdAndType(Long postId, ReactionType type);
-    
     // Todas las reacciones de un post
     List<Reaction> findByPostIdOrderByCreatedAtDesc(Long postId);
     
@@ -44,4 +41,11 @@ public interface ReactionRepository extends JpaRepository<Reaction, Long> {
     
     // Eliminar reacción específica
     void deleteByPostIdAndUserId(Long postId, Long userId);
+    
+    // Buscar reacciones por usuario
+    List<Reaction> findByUserId(Long userId);
+    
+    // Buscar reacciones por post ID
+    List<Reaction> findByPostId(Long postId);
 }
+

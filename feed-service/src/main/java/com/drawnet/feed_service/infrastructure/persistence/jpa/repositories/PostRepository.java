@@ -18,8 +18,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // Buscar posts activos por autor
     Page<Post> findByAuthorIdAndActiveOrderByCreatedAtDesc(Long authorId, boolean active, Pageable pageable);
     
-    // Buscar posts activos ordenados por fecha
+    // Buscar posts activos ordenados por fecha (más recientes primero)
     Page<Post> findByActiveOrderByCreatedAtDesc(boolean active, Pageable pageable);
+    
+    // Buscar posts activos ordenados por fecha (más antiguos primero)
+    Page<Post> findByActiveOrderByCreatedAtAsc(boolean active, Pageable pageable);
     
     // Buscar posts por contenido (búsqueda básica)
     @Query("SELECT p FROM Post p WHERE p.active = true AND p.content LIKE %:content% ORDER BY p.createdAt DESC")
@@ -54,4 +57,39 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.active = true AND p.createdAt >= :since " +
            "ORDER BY (p.likesCount + p.commentsCount + p.repostsCount) DESC, p.createdAt DESC")
     Page<Post> findTrendingPosts(@Param("since") LocalDateTime since, Pageable pageable);
+    
+    // Buscar posts por lista de autor IDs (para feed personalizado)
+    List<Post> findByAuthorIdInAndActiveOrderByCreatedAtDesc(List<Long> authorIds, boolean active);
+    
+    // Método simplificado para compatibilidad
+    default List<Post> findByUserIdIn(List<String> userIds) {
+        List<Long> authorIds = userIds.stream()
+                .map(Long::parseLong)
+                .toList();
+        return findByAuthorIdInAndActiveOrderByCreatedAtDesc(authorIds, true);
+    }
+    
+    // Buscar posts por autor (para análisis de contenido duplicado)
+    List<Post> findByAuthorIdAndCreatedAtAfter(Long authorId, LocalDateTime createdAt);
+    
+    // Método wrapper para compatibilidad con String userId
+    default List<Post> findByUserIdAndCreatedAtAfter(Long userId, LocalDateTime createdAt) {
+        return findByAuthorIdAndCreatedAtAfter(userId, createdAt);
+    }
+    
+    // Buscar posts por autor desde una fecha
+    List<Post> findByAuthorId(Long authorId);
+    
+    // Método wrapper para compatibilidad
+    default List<Post> findByUserId(String userId) {
+        return findByAuthorId(Long.parseLong(userId));
+    }
+    
+    // Contar posts de un autor desde una fecha
+    long countByAuthorIdAndCreatedAtAfter(Long authorId, LocalDateTime createdAt);
+    
+    // Método wrapper para compatibilidad
+    default long countByUserIdAndCreatedAtAfter(String userId, LocalDateTime createdAt) {
+        return countByAuthorIdAndCreatedAtAfter(Long.parseLong(userId), createdAt);
+    }
 }

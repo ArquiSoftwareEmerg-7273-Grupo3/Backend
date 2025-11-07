@@ -49,6 +49,19 @@ public class TokenServiceImpl implements BearerTokenService {
                 .compact();
     }
 
+    private String buildTokenWithDefaultParameters(String username, Long userId) {
+        var issuedAt = new Date();
+        var expiration = DateUtils.addDays(issuedAt, expirationDays);
+        var key = getSigningKey();
+        return Jwts.builder()
+                .subject(username)
+                .claim("userId", userId)
+                .issuedAt(issuedAt)
+                .expiration(expiration)
+                .signWith(key)
+                .compact();
+    }
+
     @Override
     public boolean validateToken(String token) {
         try {
@@ -80,6 +93,11 @@ public class TokenServiceImpl implements BearerTokenService {
     @Override
     public String generateToken(String username) {
         return buildTokenWithDefaultParameters(username);
+    }
+
+    @Override
+    public String generateToken(String username, Long userId) {
+        return buildTokenWithDefaultParameters(username, userId);
     }
 
     private boolean isTokenPresentIn(String authorizationParameter) {

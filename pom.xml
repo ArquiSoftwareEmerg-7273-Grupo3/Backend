@@ -85,6 +85,7 @@
         <module>api-gateway</module>
         <module>discovery-server</module>
         <module>libro-service</module>
+        <module>feed-service</module>
 
 
 

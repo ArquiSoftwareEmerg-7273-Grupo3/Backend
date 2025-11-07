@@ -42,7 +42,7 @@ public class OpenApiConfig {
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8083")
+                                .url("http://localhost:8087")
                                 .description("Desarrollo Local"),
                         new Server()
                                 .url("https://api-dev.artcollab.com/feed")

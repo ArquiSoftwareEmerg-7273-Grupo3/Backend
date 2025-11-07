@@ -4,8 +4,10 @@ import com.drawnet.feed_service.application.internal.commandservices.ReactionCom
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.entities.ReactionType;
 import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.ReactionRepository;
+import com.drawnet.feed_service.infrastructure.security.jwt.CurrentUserId;
 import com.drawnet.feed_service.interfaces.rest.resources.CreateReactionResource;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +32,7 @@ public class ReactionController {
     public ResponseEntity<Long> addReaction(
             @PathVariable Long postId,
             @Valid @RequestBody CreateReactionResource resource,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new CreateReactionCommand(postId, userId, resource.reactionType());
         return reactionCommandService.handle(command)
@@ -42,7 +44,7 @@ public class ReactionController {
     @Operation(summary = "Remove reaction from a post")
     public ResponseEntity<Void> removeReaction(
             @PathVariable Long postId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new RemoveReactionCommand(postId, userId);
         boolean removed = reactionCommandService.handle(command);
@@ -55,7 +57,7 @@ public class ReactionController {
     public ResponseEntity<String> toggleReaction(
             @PathVariable Long postId,
             @PathVariable ReactionType reactionType,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var result = reactionCommandService.toggleReaction(postId, userId, reactionType);
         String message = result.isPresent() ? "Reaction added/updated" : "Reaction removed";

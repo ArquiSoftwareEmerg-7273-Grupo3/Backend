@@ -11,7 +11,7 @@ public record PostResource(
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     boolean active,
-    Integer likesCount,
+    Integer reactionsCount,
     Integer commentsCount,
     Integer repostsCount,
     Integer viewsCount,

@@ -1,4 +1,4 @@
-package com.drawnet.artcolab.libroservice.shared.domain.model.entities;
+package com.drawnet.feed_service.shared.domain.model.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

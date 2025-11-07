@@ -3,9 +3,8 @@ package com.drawnet.feed_service.application.services;
 import com.drawnet.feed_service.infrastructure.external.clients.UserServiceClient;
 import com.drawnet.feed_service.infrastructure.external.clients.PortfolioServiceClient;
 import com.drawnet.feed_service.infrastructure.external.clients.ChatServiceClient;
-import com.drawnet.feed_service.domain.entities.Post;
-import com.drawnet.feed_service.domain.entities.Comment;
-import com.drawnet.feed_service.domain.entities.Reaction;
+import com.drawnet.feed_service.domain.model.aggregates.Post;
+import com.drawnet.feed_service.domain.model.entities.Comment;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -124,16 +123,16 @@ public class MicroserviceIntegrationService {
      */
     public void notifyPostInteraction(Post post, String actorUserId, 
                                      ChatServiceClient.NotificationType type) {
-        if (post.getUserId().equals(actorUserId)) {
+        if (post.getAuthorId().toString().equals(actorUserId)) {
             return; // No notificar interacciones propias
         }
 
         try {
             ChatServiceClient.FeedInteractionNotificationDto notification = 
                 new ChatServiceClient.FeedInteractionNotificationDto(
-                    post.getUserId(), // recipient
+                    post.getAuthorId().toString(), // recipient
                     actorUserId,      // actor
-                    post.getId(),
+                    post.getId().toString(),
                     type,
                     generateNotificationMessage(type, actorUserId),
                     LocalDateTime.now()
@@ -157,9 +156,9 @@ public class MicroserviceIntegrationService {
         try {
             ChatServiceClient.FeedInteractionNotificationDto notification = 
                 new ChatServiceClient.FeedInteractionNotificationDto(
-                    originalComment.getUserId(),
-                    reply.getUserId(),
-                    originalComment.getPost().getId(),
+                    originalComment.getUserId().toString(),
+                    reply.getUserId().toString(),
+                    originalComment.getPost().getId().toString(),
                     ChatServiceClient.NotificationType.COMMENT_REPLY,
                     "Ha respondido a tu comentario",
                     LocalDateTime.now()
@@ -195,11 +194,11 @@ public class MicroserviceIntegrationService {
             if (shouldSendPush) {
                 ChatServiceClient.PushNotificationDto pushNotification = 
                     new ChatServiceClient.PushNotificationDto(
-                        post.getUserId(),
+                        post.getAuthorId().toString(),
                         "Nueva interacción en tu post",
                         generateNotificationMessage(type, actorUserId),
                         "OPEN_POST",
-                        post.getId()
+                        post.getId().toString()
                     );
 
                 chatServiceClient.sendPushNotification(pushNotification);

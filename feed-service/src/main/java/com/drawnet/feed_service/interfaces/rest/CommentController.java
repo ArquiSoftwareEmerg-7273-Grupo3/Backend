@@ -4,9 +4,11 @@ import com.drawnet.feed_service.application.internal.commandservices.CommentComm
 import com.drawnet.feed_service.application.internal.queryservices.CommentQueryService;
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.querys.GetCommentsQuery;
+import com.drawnet.feed_service.infrastructure.security.jwt.CurrentUserId;
 import com.drawnet.feed_service.interfaces.rest.resources.*;
 import com.drawnet.feed_service.interfaces.rest.transform.CommentResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,7 @@ public class CommentController {
     public ResponseEntity<Long> createComment(
             @PathVariable Long postId,
             @Valid @RequestBody CreateCommentResource resource,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new CreateCommentCommand(postId, userId, resource.content(), resource.parentCommentId());
         return commentCommandService.handle(command)
@@ -78,7 +80,7 @@ public class CommentController {
     @Operation(summary = "Delete a comment")
     public ResponseEntity<Void> deleteComment(
             @PathVariable Long commentId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new DeleteCommentCommand(commentId, userId);
         boolean deleted = commentCommandService.handle(command);

@@ -4,6 +4,7 @@ import com.drawnet.feed_service.application.internal.commandservices.PostCommand
 import com.drawnet.feed_service.application.internal.queryservices.PostQueryService;
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.querys.GetPostsQuery;
+import com.drawnet.feed_service.infrastructure.security.jwt.CurrentUserId;
 import com.drawnet.feed_service.interfaces.rest.resources.*;
 import com.drawnet.feed_service.interfaces.rest.transform.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,7 +33,7 @@ public class PostController {
     @Operation(summary = "Create a new post")
     public ResponseEntity<Long> createPost(
             @Valid @RequestBody CreatePostResource resource,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new CreatePostCommand(userId, resource.content(), resource.tags());
         var postId = postCommandService.handle(command);
@@ -79,7 +80,7 @@ public class PostController {
     public ResponseEntity<PostResource> updatePost(
             @PathVariable Long postId,
             @Valid @RequestBody CreatePostResource resource,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new UpdatePostCommand(postId, resource.content(), resource.tags());
         return postCommandService.handle(command)
@@ -92,7 +93,7 @@ public class PostController {
     @Operation(summary = "Delete a post")
     public ResponseEntity<Void> deletePost(
             @PathVariable Long postId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new DeletePostCommand(postId, userId);
         boolean deleted = postCommandService.handle(command);

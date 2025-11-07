@@ -3,9 +3,11 @@ package com.drawnet.feed_service.interfaces.rest;
 import com.drawnet.feed_service.application.internal.commandservices.RepostCommandService;
 import com.drawnet.feed_service.application.internal.queryservices.RepostQueryService;
 import com.drawnet.feed_service.domain.model.commands.CreateRepostCommand;
+import com.drawnet.feed_service.infrastructure.security.jwt.CurrentUserId;
 import com.drawnet.feed_service.interfaces.rest.resources.*;
 import com.drawnet.feed_service.interfaces.rest.transform.RepostResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class RepostController {
     public ResponseEntity<Long> createRepost(
             @PathVariable Long postId,
             @Valid @RequestBody CreateRepostResource resource,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         var command = new CreateRepostCommand(postId, userId, resource.comment());
         return repostCommandService.handle(command)
@@ -40,7 +42,7 @@ public class RepostController {
     @Operation(summary = "Remove repost")
     public ResponseEntity<Void> removeRepost(
             @PathVariable Long postId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         boolean removed = repostCommandService.removeRepost(postId, userId);
         return removed ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -51,7 +53,7 @@ public class RepostController {
     public ResponseEntity<String> toggleRepost(
             @PathVariable Long postId,
             @RequestBody(required = false) CreateRepostResource resource,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         String comment = resource != null ? resource.comment() : null;
         boolean result = repostCommandService.toggleRepost(postId, userId, comment);
@@ -97,7 +99,7 @@ public class RepostController {
     @Operation(summary = "Check if user has reposted a post")
     public ResponseEntity<Boolean> hasUserReposted(
             @PathVariable Long postId,
-            @RequestHeader("X-User-Id") Long userId) {
+            @Parameter(hidden = true) @CurrentUserId Long userId) {
         
         boolean hasReposted = repostQueryService.hasUserReposted(postId, userId);
         return ResponseEntity.ok(hasReposted);

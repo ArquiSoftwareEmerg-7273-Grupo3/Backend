@@ -38,4 +38,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.active = true AND c.content LIKE %:content% " +
            "ORDER BY c.createdAt DESC")
     Page<Comment> findByContentContaining(@Param("content") String content, Pageable pageable);
+    
+    // Buscar comentarios por post ID
+    List<Comment> findByPostId(Long postId);
+    
+    // Buscar comentarios por usuario ID
+    List<Comment> findByUserId(Long userId);
 }
+

@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -35,24 +34,14 @@ public class Reaction extends AuditableModel {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
     
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-    
     // Constructors
     public Reaction(Long userId, ReactionType type, Post post) {
         this.userId = userId;
         this.type = type;
         this.post = post;
-        this.createdAt = LocalDateTime.now();
     }
     
-    // Lifecycle methods
-    @PrePersist
-    protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-    }
+    // Lifecycle methods no necesarios - heredados de AuditableModel
     
     // Setters
     public void setPost(Post post) { 

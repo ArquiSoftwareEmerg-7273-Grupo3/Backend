@@ -54,8 +54,8 @@ public class Post extends AuditableAbstractAggregateRoot<Post> {
     private Set<String> tags = new HashSet<>();
 
     // Métricas de engagement
-    @Column(name = "likes_count", nullable = false)
-    private Integer likesCount = 0;
+    @Column(name = "reactions_count", nullable = false)
+    private Integer reactionsCount = 0;
     
     @Column(name = "comments_count", nullable = false)
     private Integer commentsCount = 0;
@@ -127,26 +127,23 @@ public class Post extends AuditableAbstractAggregateRoot<Post> {
         reactions.add(reaction);
         reaction.setPost(this);
         
-        if (reaction.isLike()) {
-            incrementLikesCount();
-        }
+        // Contar todas las reacciones, no solo LIKE
+        incrementLikesCount();
     }
 
     public void removeReaction(Reaction reaction) {
         if (reactions.remove(reaction)) {
             reaction.setPost(null);
-            if (reaction.isLike()) {
-                decrementLikesCount();
-            }
+            // Decrementar contador para cualquier tipo de reacción
+            decrementLikesCount();
         }
     }
     
     private void removeExistingReactionByUser(Long userId) {
         reactions.removeIf(reaction -> {
             if (reaction.getUserId().equals(userId)) {
-                if (reaction.isLike()) {
-                    decrementLikesCount();
-                }
+                // Decrementar contador para cualquier tipo de reacción
+                decrementLikesCount();
                 return true;
             }
             return false;
@@ -194,11 +191,11 @@ public class Post extends AuditableAbstractAggregateRoot<Post> {
 
     // Métricas y contadores
     private void incrementLikesCount() {
-        this.likesCount++;
+        this.reactionsCount++;
     }
     
     private void decrementLikesCount() {
-        this.likesCount = Math.max(0, this.likesCount - 1);
+        this.reactionsCount = Math.max(0, this.reactionsCount - 1);
     }
     
     private void incrementCommentsCount() {
@@ -262,7 +259,7 @@ public class Post extends AuditableAbstractAggregateRoot<Post> {
     // Cálculo de engagement
     public double getEngagementRate() {
         if (viewsCount == 0) return 0.0;
-        int totalEngagements = likesCount + commentsCount + repostsCount;
+        int totalEngagements = reactionsCount + commentsCount + repostsCount;
         return (double) totalEngagements / viewsCount * 100;
     }
 
@@ -308,7 +305,7 @@ public class Post extends AuditableAbstractAggregateRoot<Post> {
                 ", content='" + (content != null && content.length() > 50 ? 
                     content.substring(0, 50) + "..." : content) + '\'' +
                 ", active=" + active +
-                ", likesCount=" + likesCount +
+                ", reactionsCount=" + reactionsCount +
                 ", commentsCount=" + commentsCount +
                 ", repostsCount=" + repostsCount +
                 ", viewsCount=" + viewsCount +

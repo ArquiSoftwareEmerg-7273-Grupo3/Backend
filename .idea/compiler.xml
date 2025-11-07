@@ -66,15 +66,6 @@
         </processorPath>
         <module name="chat-service" />
       </profile>
-      <profile name="Annotation profile for monetization-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
-        </processorPath>
-        <module name="monetization-service" />
-      </profile>
       <profile name="Annotation profile for portafolio-service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
@@ -83,6 +74,24 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
         </processorPath>
         <module name="portafolio-service" />
+      </profile>
+      <profile name="Annotation profile for feed-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.34/lombok-1.18.34.jar" />
+        </processorPath>
+        <module name="feed-service" />
+      </profile>
+      <profile name="Annotation profile for monetization-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="monetization-service" />
       </profile>
       <profile name="Annotation profile for CollaborativeProjectsService" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -104,6 +113,7 @@
       <module name="api-gateway" options="-parameters" />
       <module name="chat-service" options="-parameters" />
       <module name="discovery-server" options="-parameters" />
+      <module name="feed-service" options="-parameters" />
       <module name="libro-service" options="-parameters" />
       <module name="monetization-service" options="-parameters" />
       <module name="portafolio-service" options="-parameters" />
