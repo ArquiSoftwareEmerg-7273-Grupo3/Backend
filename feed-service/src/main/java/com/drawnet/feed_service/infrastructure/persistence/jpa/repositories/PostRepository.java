@@ -32,8 +32,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT DISTINCT p FROM Post p JOIN p.tags t WHERE p.active = true AND t IN :tags ORDER BY p.createdAt DESC")
     Page<Post> findByTagsIn(@Param("tags") List<String> tags, Pageable pageable);
     
-    // Posts más populares (por likes)
-    Page<Post> findByActiveOrderByLikesCountDescCreatedAtDesc(boolean active, Pageable pageable);
+    // Posts más populares (por reacciones)
+    Page<Post> findByActiveOrderByReactionsCountDescCreatedAtDesc(boolean active, Pageable pageable);
     
     // Posts más comentados
     Page<Post> findByActiveOrderByCommentsCountDescCreatedAtDesc(boolean active, Pageable pageable);
@@ -55,7 +55,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     
     // Posts trending (alto engagement reciente)
     @Query("SELECT p FROM Post p WHERE p.active = true AND p.createdAt >= :since " +
-           "ORDER BY (p.likesCount + p.commentsCount + p.repostsCount) DESC, p.createdAt DESC")
+           "ORDER BY (p.reactionsCount + p.commentsCount + p.repostsCount) DESC, p.createdAt DESC")
     Page<Post> findTrendingPosts(@Param("since") LocalDateTime since, Pageable pageable);
     
     // Buscar posts por lista de autor IDs (para feed personalizado)

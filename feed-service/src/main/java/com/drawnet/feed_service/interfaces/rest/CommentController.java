@@ -76,17 +76,7 @@ public class CommentController {
         return ResponseEntity.ok(replyResources);
     }
 
-    @DeleteMapping("/comments/{commentId}")
-    @Operation(summary = "Delete a comment")
-    public ResponseEntity<Void> deleteComment(
-            @PathVariable Long commentId,
-            @Parameter(hidden = true) @CurrentUserId Long userId) {
-        
-        var command = new DeleteCommentCommand(commentId, userId);
-        boolean deleted = commentCommandService.handle(command);
-        
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
-    }
+    
 
     @GetMapping("/users/{userId}/comments")
     @Operation(summary = "Get comments by user")

@@ -51,7 +51,7 @@ public class PostQueryService {
         
         // Posts ordenados por criterio
         return switch (query.sortBy()) {
-            case MOST_LIKED -> postRepository.findByActiveOrderByLikesCountDescCreatedAtDesc(true, pageable);
+            case MOST_LIKED -> postRepository.findByActiveOrderByCommentsCountDescCreatedAtDesc(true, pageable);
             case MOST_COMMENTED -> postRepository.findByActiveOrderByCommentsCountDescCreatedAtDesc(true, pageable);
             case TRENDING -> postRepository.findTrendingPosts(LocalDateTime.now().minusDays(7), pageable);
             case OLDEST -> postRepository.findByActiveOrderByCreatedAtAsc(true, pageable);

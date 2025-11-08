@@ -7,5 +7,5 @@ public record DeleteCommentCommand(
     Long commentId,
     
     @NotNull(message = "User ID is required")
-    Long userId // Para verificar autorización
+    java.util.UUID userId // Para verificar autorización
 ) {}

@@ -263,6 +263,28 @@ public class Post extends AuditableAbstractAggregateRoot<Post> {
         return (double) totalEngagements / viewsCount * 100;
     }
 
+    // Métodos de compatibilidad para diferentes nombres
+    public Integer getLikesCount() {
+        return reactionsCount;
+    }
+    
+    public Integer getSharesCount() {
+        return repostsCount;
+    }
+    
+    public String getUserId() {
+        return authorId != null ? authorId.toString() : null;
+    }
+    
+    public void setUserId(String userId) {
+        this.authorId = userId != null ? Long.parseLong(userId) : null;
+    }
+    
+    public void updateReactionCount() {
+        // Actualizar contador basado en la colección real
+        this.reactionsCount = reactions.size();
+    }
+
     // Getters defensivos para colecciones
     public List<Comment> getCommentsUnmodifiable() {
         return Collections.unmodifiableList(comments);

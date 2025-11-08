@@ -81,7 +81,7 @@ public class FeedDomainService {
         double timeScore = Math.max(0, 100 - (hoursOld * 0.5)); // Decae 0.5 puntos por hora
         
         // Factor de engagement
-        double engagementScore = (post.getLikesCount() * 2) + 
+        double engagementScore = (post.getReactionsCount() * 2) + 
                                (post.getCommentsCount() * 3) + 
                                (post.getRepostsCount() * 5);
         
@@ -118,7 +118,7 @@ public class FeedDomainService {
         long hoursOld = java.time.Duration.between(post.getCreatedAt(), LocalDateTime.now()).toHours();
         if (hoursOld == 0) hoursOld = 1;
         
-        double totalEngagement = post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount();
+        double totalEngagement = post.getReactionsCount() + post.getCommentsCount() + post.getRepostsCount();
         double velocityScore = totalEngagement / hoursOld;
         
         // Boost para posts muy recientes
@@ -134,7 +134,7 @@ public class FeedDomainService {
         Map<String, Object> analysis = new HashMap<>();
         
         // Métricas básicas
-        analysis.put("totalEngagement", post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount());
+        analysis.put("totalEngagement", post.getReactionsCount() + post.getCommentsCount() + post.getRepostsCount());
         analysis.put("engagementRate", calculateEngagementRate(post));
         analysis.put("viralityScore", calculateViralityScore(post));
         
@@ -142,11 +142,11 @@ public class FeedDomainService {
         long hoursOld = java.time.Duration.between(post.getCreatedAt(), LocalDateTime.now()).toHours();
         analysis.put("hoursOld", hoursOld);
         analysis.put("avgEngagementPerHour", 
-                    (double)(post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount()) / Math.max(1, hoursOld));
+                    (double)(post.getReactionsCount() + post.getCommentsCount() + post.getRepostsCount()) / Math.max(1, hoursOld));
         
         // Distribución de engagement
         Map<String, Integer> engagementBreakdown = new HashMap<>();
-        engagementBreakdown.put("likes", post.getLikesCount());
+        engagementBreakdown.put("likes", post.getReactionsCount());
         engagementBreakdown.put("comments", post.getCommentsCount());
         engagementBreakdown.put("reposts", post.getRepostsCount());
         analysis.put("engagementBreakdown", engagementBreakdown);
@@ -220,14 +220,14 @@ public class FeedDomainService {
     
     private double calculateEngagementRate(Post post) {
         // Asumir que las vistas están en algún lugar o usar una fórmula alternativa
-        int totalInteractions = post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount();
+        int totalInteractions = post.getReactionsCount() + post.getCommentsCount() + post.getRepostsCount();
         // Como no tenemos vistas, usar una heurística basada en followers o tiempo
         return totalInteractions > 0 ? totalInteractions / 100.0 : 0.0;
     }
     
     private double calculateViralityScore(Post post) {
         long hoursOld = java.time.Duration.between(post.getCreatedAt(), LocalDateTime.now()).toHours();
-        double totalEngagement = post.getLikesCount() + post.getCommentsCount() + post.getRepostsCount();
+        double totalEngagement = post.getReactionsCount() + post.getCommentsCount() + post.getRepostsCount();
         
         if (hoursOld <= 0) hoursOld = 1;
         
@@ -258,7 +258,7 @@ public class FeedDomainService {
         long hoursOld = java.time.Duration.between(post.getCreatedAt(), LocalDateTime.now()).toHours();
         if (hoursOld <= 0) return false;
         
-        double engagementVelocity = (double)(post.getLikesCount() + post.getCommentsCount()) / hoursOld;
+        double engagementVelocity = (double)(post.getReactionsCount() + post.getCommentsCount()) / hoursOld;
         return engagementVelocity > 1000; // Más de 1000 interacciones por hora es sospechoso
     }
     

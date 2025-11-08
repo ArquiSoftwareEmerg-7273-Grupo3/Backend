@@ -189,7 +189,7 @@ public class MicroserviceIntegrationService {
         try {
             // Solo enviar push si el post tiene mucho engagement o es reciente
             boolean shouldSendPush = post.getCreatedAt().isAfter(LocalDateTime.now().minusHours(24)) ||
-                                   (post.getLikesCount() + post.getCommentsCount()) > 50;
+                                   (post.getReactionsCount() + post.getCommentsCount()) > 50;
 
             if (shouldSendPush) {
                 ChatServiceClient.PushNotificationDto pushNotification = 

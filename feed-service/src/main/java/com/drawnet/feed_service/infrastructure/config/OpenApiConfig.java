@@ -11,6 +11,7 @@ import io.swagger.v3.oas.models.Components;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class OpenApiConfig {
     private String appVersion;
 
     @Bean
+    @Primary
     public OpenAPI feedServiceOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
@@ -42,7 +44,7 @@ public class OpenApiConfig {
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8087")
+                                .url("http://localhost:8083")
                                 .description("Desarrollo Local"),
                         new Server()
                                 .url("https://api-dev.artcollab.com/feed")
