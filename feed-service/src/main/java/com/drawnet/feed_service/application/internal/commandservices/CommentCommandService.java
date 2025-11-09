@@ -3,6 +3,7 @@ package com.drawnet.feed_service.application.internal.commandservices;
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.entities.Comment;
 import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.*;
+import com.drawnet.feed_service.application.services.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ public class CommentCommandService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final WebSocketService webSocketService;
 
     public Optional<Long> handle(CreateCommentCommand command) {
         return postRepository.findById(command.postId())
@@ -38,6 +40,9 @@ public class CommentCommandService {
                     post.addComment(comment);
                     var savedComment = commentRepository.save(comment);
                     postRepository.save(post);
+                    
+                    // Enviar evento WebSocket para actualización en tiempo real
+                    webSocketService.sendCommentCreatedEvent(command.postId(), savedComment);
                     
                     return savedComment.getId();
                 });

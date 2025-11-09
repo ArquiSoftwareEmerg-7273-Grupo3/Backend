@@ -4,6 +4,7 @@ import com.drawnet.feed_service.domain.model.aggregates.Post;
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.entities.*;
 import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.*;
+import com.drawnet.feed_service.application.services.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +18,15 @@ public class PostCommandService {
 
     private final PostRepository postRepository;
     private final MediaRepository mediaRepository;
+    private final WebSocketService webSocketService;
 
     public Long handle(CreatePostCommand command) {
         var post = new Post(command.authorId(), command.content(), command.tags());
         var savedPost = postRepository.save(post);
+        
+        // Enviar evento WebSocket para actualización en tiempo real
+        webSocketService.sendPostCreatedEvent(savedPost);
+        
         return savedPost.getId();
     }
 
@@ -32,7 +38,12 @@ public class PostCommandService {
                     if (command.tags() != null) {
                         command.tags().forEach(post::addTag);
                     }
-                    return postRepository.save(post);
+                    var updatedPost = postRepository.save(post);
+                    
+                    // Enviar evento WebSocket para actualización en tiempo real
+                    webSocketService.sendPostUpdatedEvent(updatedPost);
+                    
+                    return updatedPost;
                 });
     }
 
@@ -42,6 +53,10 @@ public class PostCommandService {
                 .map(post -> {
                     post.deactivate();
                     postRepository.save(post);
+                    
+                    // Enviar evento WebSocket para actualización en tiempo real
+                    webSocketService.sendPostDeletedEvent(command.postId(), command.userId());
+                    
                     return true;
                 })
                 .orElse(false);

@@ -3,6 +3,7 @@ package com.drawnet.feed_service.application.internal.commandservices;
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.entities.Reaction;
 import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.*;
+import com.drawnet.feed_service.application.services.WebSocketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ public class ReactionCommandService {
 
     private final ReactionRepository reactionRepository;
     private final PostRepository postRepository;
+    private final WebSocketService webSocketService;
 
     public Optional<Long> handle(CreateReactionCommand command) {
         return postRepository.findById(command.postId())
@@ -30,6 +32,14 @@ public class ReactionCommandService {
                         var reaction = existingReaction.get();
                         reaction.changeType(command.reactionType());
                         var savedReaction = reactionRepository.save(reaction);
+                        
+                        // Enviar evento WebSocket para actualización en tiempo real
+                        webSocketService.sendLikeUpdatedEvent(
+                                command.postId(), 
+                                post.getReactionsCount(), 
+                                command.userId()
+                        );
+                        
                         return savedReaction.getId();
                     } else {
                         // Crear nueva reacción
@@ -37,6 +47,14 @@ public class ReactionCommandService {
                         post.addReaction(reaction);
                         var savedReaction = reactionRepository.save(reaction);
                         postRepository.save(post);
+                        
+                        // Enviar evento WebSocket para actualización en tiempo real
+                        webSocketService.sendLikeUpdatedEvent(
+                                command.postId(), 
+                                post.getReactionsCount(), 
+                                command.userId()
+                        );
+                        
                         return savedReaction.getId();
                     }
                 });
@@ -53,6 +71,13 @@ public class ReactionCommandService {
             post.removeReaction(reaction);
             reactionRepository.delete(reaction);
             postRepository.save(post);
+            
+            // Enviar evento WebSocket para actualización en tiempo real
+            webSocketService.sendLikeUpdatedEvent(
+                    command.postId(), 
+                    post.getReactionsCount(), 
+                    command.userId()
+            );
             
             return true;
         }

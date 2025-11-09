@@ -2,6 +2,7 @@ package com.drawnet.feed_service.domain.model.entities;
 
 import com.drawnet.feed_service.domain.model.aggregates.Post;
 import com.drawnet.feed_service.shared.domain.model.entities.AuditableModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -30,6 +31,7 @@ public class Reaction extends AuditableModel {
     @Column(name = "reaction_type", nullable = false)
     private ReactionType type;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;

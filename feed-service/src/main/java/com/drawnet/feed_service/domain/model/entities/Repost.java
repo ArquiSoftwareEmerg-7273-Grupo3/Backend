@@ -2,6 +2,7 @@ package com.drawnet.feed_service.domain.model.entities;
 
 import com.drawnet.feed_service.domain.model.aggregates.Post;
 import com.drawnet.feed_service.shared.domain.model.entities.AuditableModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -27,6 +28,7 @@ public class Repost extends AuditableModel {
     @Column(name = "user_id", nullable = false)
     private Long userId; // Usuario que hace el repost
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "original_post_id", nullable = false)
     private Post originalPost;

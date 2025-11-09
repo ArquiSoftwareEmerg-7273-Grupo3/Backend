@@ -2,6 +2,7 @@ package com.drawnet.feed_service.domain.model.entities;
 
 import com.drawnet.feed_service.domain.model.aggregates.Post;
 import com.drawnet.feed_service.shared.domain.model.entities.AuditableModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,15 +33,18 @@ public class Comment extends AuditableModel {
     @Column(name = "content", nullable = false, length = 1000)
     private String content;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
     
     // Para comentarios anidados (respuestas a comentarios)
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
     
+    @JsonIgnore
     @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> replies = new ArrayList<>();
     

@@ -2,6 +2,7 @@ package com.drawnet.feed_service.domain.model.entities;
 
 import com.drawnet.feed_service.domain.model.aggregates.Post;
 import com.drawnet.feed_service.shared.domain.model.entities.AuditableModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,6 +45,7 @@ public class Media extends AuditableModel {
     @Column(name = "file_extension", length = 10)
     private String fileExtension;
     
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
