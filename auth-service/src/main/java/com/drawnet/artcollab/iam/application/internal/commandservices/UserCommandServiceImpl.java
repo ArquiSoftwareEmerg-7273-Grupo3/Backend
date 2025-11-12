@@ -55,7 +55,11 @@ public class UserCommandServiceImpl implements UserCommandService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (!hashingService.matches(command.password(), user.getPassword()))
             throw new RuntimeException("Invalid password");
-        var token = tokenService.generateToken(user.getUsername(), user.getId());
+        
+        // Extract role name from user's role
+        String roleName = user.getRole().getName().name();
+        var token = tokenService.generateToken(user.getUsername(), user.getId(), roleName);
+        
         return Optional.of(new ImmutablePair<>(user, token));
     }
 }

@@ -1,47 +1,65 @@
 package com.drawnet.artcollab.portafolioservice.domain.model.entities;
 
-import com.drawnet.artcollab.portafolioservice.domain.model.aggregates.Portafolio;
 import com.drawnet.artcollab.portafolioservice.domain.model.valueobjects.Calificacion;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+/**
+ * Entity: Ilustracion
+ * Representa una ilustración que pertenece a una categoría específica
+ */
 @Getter
 @Entity
+@Table(name = "ilustraciones")
 public class Ilustracion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "ilustrador_id", nullable = false)
     private Long ilustradorId; // ID del ilustrador que creó la ilustración
+    
+    @Column(nullable = false, length = 200)
     private String titulo;
+    
+    @Column(length = 1000)
     private String descripcion;
+    
+    @Column(name = "url_imagen", nullable = false, length = 500)
     private String urlImagen;
+    
+    @Column(nullable = false, updatable = false)
     private LocalDateTime fecha;
 
+    @Column(nullable = false)
     private boolean publicada;
 
+    // Relación con Categoría (muchas ilustraciones pertenecen a una categoría)
+    // Relación con Categoría (muchas ilustraciones pertenecen a una categoría)
     @JsonBackReference
-    @ManyToMany(mappedBy = "ilustraciones")
-    private Set<Portafolio> portafolios = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "ilustracion", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Calificacion> calificaciones = new ArrayList<>();
 
     public Ilustracion() {}
 
-    public Ilustracion(Long ilustradorId, String titulo, String descripcion, String urlImagen) {
+    public Ilustracion(Long ilustradorId, String titulo, String descripcion, String urlImagen, Categoria categoria) {
         this.ilustradorId = ilustradorId;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.urlImagen = urlImagen;
-        this.fecha = LocalDateTime.now(); // Se asigna la fecha actual al crear
+        this.categoria = categoria;
+        this.fecha = LocalDateTime.now();
         this.publicada = false;
     }
 
@@ -49,8 +67,8 @@ public class Ilustracion {
         this.calificaciones.add(new Calificacion(usuarioId, puntuacion, comentario, this));
     }
 
-    public void setPortafolio(Portafolio portafolio) {
-        this.portafolios.add(portafolio);
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
     public void publicar() {
@@ -101,8 +119,8 @@ public class Ilustracion {
         return fecha;
     }
 
-    public Set<Portafolio> getPortafolios() {
-        return portafolios;
+    public Categoria getCategoria() {
+        return categoria;
     }
 
     public List<Calificacion> getCalificaciones() {

@@ -1,10 +1,12 @@
 package com.drawnet.artcollab.portafolioservice.application.internal.queryservices;
 
 import com.drawnet.artcollab.portafolioservice.domain.model.aggregates.Portafolio;
+import com.drawnet.artcollab.portafolioservice.domain.model.entities.Categoria;
 import com.drawnet.artcollab.portafolioservice.domain.model.entities.Ilustracion;
 import com.drawnet.artcollab.portafolioservice.domain.model.queries.*;
 import com.drawnet.artcollab.portafolioservice.domain.model.valueobjects.Calificacion;
 import com.drawnet.artcollab.portafolioservice.domain.services.PortafolioQueryService;
+import com.drawnet.artcollab.portafolioservice.infrastructure.persistance.jpa.repositories.CategoriaRepository;
 import com.drawnet.artcollab.portafolioservice.infrastructure.persistance.jpa.repositories.IlustracionRepository;
 import com.drawnet.artcollab.portafolioservice.infrastructure.persistance.jpa.repositories.PortafolioRepository;
 import com.drawnet.artcollab.portafolioservice.interfaces.rest.resources.IlustracionResumenResource;
@@ -17,10 +19,15 @@ import java.util.Optional;
 public class PortafolioQueryServiceImpl implements PortafolioQueryService {
 
     private final PortafolioRepository portafolioRepository;
+    private final CategoriaRepository categoriaRepository;
     private final IlustracionRepository ilustracionRepository;
 
-    public PortafolioQueryServiceImpl(PortafolioRepository portafolioRepository, IlustracionRepository ilustracionRepository) {
+    public PortafolioQueryServiceImpl(
+            PortafolioRepository portafolioRepository,
+            CategoriaRepository categoriaRepository,
+            IlustracionRepository ilustracionRepository) {
         this.portafolioRepository = portafolioRepository;
+        this.categoriaRepository = categoriaRepository;
         this.ilustracionRepository = ilustracionRepository;
     }
 
@@ -29,9 +36,39 @@ public class PortafolioQueryServiceImpl implements PortafolioQueryService {
         return portafolioRepository.findByIlustradorId(query.ilustradorId());
     }
 
+    // ============================================
+    // QUERIES DE CATEGORÍA
+    // ============================================
+    
     @Override
+    public List<Categoria> handle(ObtenerCategoriasPorPortafolioQuery query) {
+        return categoriaRepository.findByPortafolioIdWithIlustraciones(query.portafolioId());
+    }
+    
+    @Override
+    public Optional<Categoria> handle(ObtenerCategoriaConIlustracionesQuery query) {
+        return categoriaRepository.findByIdWithIlustraciones(query.categoriaId());
+    }
+    
+    // ============================================
+    // QUERIES DE ILUSTRACIÓN
+    // ============================================
+    
+    @Override
+    public List<Ilustracion> handle(ObtenerIlustracionesPorCategoriaQuery query) {
+        Optional<Categoria> categoria = categoriaRepository.findByIdWithIlustraciones(query.categoriaId());
+        return categoria.map(Categoria::getIlustraciones).orElse(List.of());
+    }
+
+    /**
+     * @deprecated Use ObtenerCategoriasPorPortafolioQuery en su lugar
+     */
+    @Override
+    @Deprecated
     public List<Ilustracion> handle(ObtenerIlustracionesPorPortafolioQuery query) {
-        return ilustracionRepository.findByPortafolios_Id(query.portafolioId());
+        throw new UnsupportedOperationException(
+                "Este método está obsoleto. Use ObtenerCategoriasPorPortafolioQuery para obtener categorías con sus ilustraciones"
+        );
     }
 
     @Override

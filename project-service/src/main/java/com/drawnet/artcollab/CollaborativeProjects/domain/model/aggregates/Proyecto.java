@@ -6,57 +6,109 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.valueobjects.EstadoProyecto;
 
 @Entity
 
 public class Proyecto extends AuditableAbstractAggregateRoot<Proyecto> {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @NotNull
-    @Column(name = "id_escritor")
+    @Column(name = "escritor_id", nullable = false)
     private Long escritorId;
 
     @NotNull
+    @Column(nullable = false, length = 200)
     private String titulo;
 
     @NotNull
+    @Column(columnDefinition = "TEXT")
     private String descripcion;
 
-    @NotNull
-    @Column(name = "url_imagen")
-    private String urlImagen;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal presupuesto;
 
     @NotNull
-    private Date fecha;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private EstadoProyecto estado;
 
-    public Proyecto() {
-    }
+    @Column(name = "fecha_inicio")
+    private LocalDateTime fechaInicio;
+
+    @Column(name = "fecha_fin")
+    private LocalDateTime fechaFin;
+
+    @Column(name = "max_postulaciones")
+    private Integer maxPostulaciones;
+
+    @Column(name = "ilustrador_asignado_id")
+    private Long ilustradorAsignadoId; // Ilustrador seleccionado
+
+    protected Proyecto() {}
 
     public Proyecto(CreateProyectoCommand command) {
         this.escritorId = command.escritorId();
         this.titulo = command.titulo();
         this.descripcion = command.descripcion();
-        this.urlImagen = command.urlImagen();
-        this.fecha = command.fecha();
+        this.presupuesto = command.presupuesto();
+        this.estado = EstadoProyecto.ABIERTO;
+        this.fechaInicio = command.fechaInicio();
+        this.fechaFin = command.fechaFin();
+        this.maxPostulaciones = command.maxPostulaciones() != null ? command.maxPostulaciones() : 50;
     }
 
-    public Long getEscritorId() {
-        return escritorId;
+    public boolean perteneceA(Long escritorId) {
+        return this.escritorId.equals(escritorId);
     }
 
-    public String getTitulo() {
-        return titulo;
+    public boolean estaAbierto() {
+        return this.estado == EstadoProyecto.ABIERTO;
     }
 
-    public String getUrlImagen() {
-        return urlImagen;
+    public void cerrar() {
+        if (this.estado == EstadoProyecto.FINALIZADO) {
+            throw new IllegalStateException("No se puede cerrar un proyecto finalizado");
+        }
+        this.estado = EstadoProyecto.CERRADO;
     }
 
-    public String getDescripcion() {
-        return descripcion;
+    public void iniciar(Long ilustradorId) {
+        if (this.estado != EstadoProyecto.ABIERTO) {
+            throw new IllegalStateException("Solo se pueden iniciar proyectos abiertos");
+        }
+        this.estado = EstadoProyecto.EN_PROGRESO;
+        this.ilustradorAsignadoId = ilustradorId;
     }
 
-    public Date getFecha() {
-        return fecha;
+    public void finalizar() {
+        if (this.estado != EstadoProyecto.EN_PROGRESO) {
+            throw new IllegalStateException("Solo se pueden finalizar proyectos en progreso");
+        }
+        this.estado = EstadoProyecto.FINALIZADO;
     }
+
+    public void reabrir() {
+        if (this.estado == EstadoProyecto.FINALIZADO) {
+            throw new IllegalStateException("No se puede reabrir un proyecto finalizado");
+        }
+        this.estado = EstadoProyecto.ABIERTO;
+        this.ilustradorAsignadoId = null;
+    }
+
+    public Long getId() { return id; }
+    public Long getEscritorId() { return escritorId; }
+    public String getTitulo() { return titulo; }
+    public String getDescripcion() { return descripcion; }
+    public BigDecimal getPresupuesto() { return presupuesto; }
+    public EstadoProyecto getEstado() { return estado; }
+    public LocalDateTime getFechaInicio() { return fechaInicio; }
+    public LocalDateTime getFechaFin() { return fechaFin; }
+    public Integer getMaxPostulaciones() { return maxPostulaciones; }
+    public Long getIlustradorAsignadoId() { return ilustradorAsignadoId; }
 }

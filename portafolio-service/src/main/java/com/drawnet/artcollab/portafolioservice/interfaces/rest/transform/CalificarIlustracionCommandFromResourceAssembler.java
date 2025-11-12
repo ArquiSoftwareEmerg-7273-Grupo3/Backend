@@ -5,10 +5,10 @@ import com.drawnet.artcollab.portafolioservice.domain.model.entities.Ilustracion
 import com.drawnet.artcollab.portafolioservice.interfaces.rest.resources.CalificarIlustracionResource;
 
 public class CalificarIlustracionCommandFromResourceAssembler {
-    public static CalificarIlustracionCommand toCommandFromResource(CalificarIlustracionResource resource, Long ilustracionId) {
+    public static CalificarIlustracionCommand toCommandFromResource(CalificarIlustracionResource resource, Long ilustracionId, Long usuarioId) {
         return new CalificarIlustracionCommand(
                 ilustracionId,
-                resource.usuarioId(),
+                usuarioId,
                 resource.puntuacion(),
                 resource.comentario()
         );

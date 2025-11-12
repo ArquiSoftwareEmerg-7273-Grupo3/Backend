@@ -10,7 +10,18 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface IlustracionRepository extends JpaRepository<Ilustracion, Long> {
-    List<Ilustracion> findByPortafolios_Id(Long portafolioId);
+    
+    /**
+     * Busca ilustraciones por categoría.
+     * Reemplaza el antiguo findByPortafolios_Id que usaba la relación ManyToMany.
+     */
+    List<Ilustracion> findByCategoria_Id(Long categoriaId);
+    
+    /**
+     * Busca ilustraciones por portafolio a través de la categoría.
+     */
+    @Query("SELECT i FROM Ilustracion i JOIN i.categoria c WHERE c.portafolio.id = :portafolioId")
+    List<Ilustracion> findByPortafolioId(@Param("portafolioId") Long portafolioId);
 
     @Query("SELECT COALESCE(MAX(i.id), 0) FROM Ilustracion i WHERE i.ilustradorId = :ilustradorId")
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -1,12 +1,10 @@
 package com.drawnet.artcollab.portafolioservice.interfaces.rest.resources;
 
-import java.util.List;
-
-public record PortafolioResource(
-        Long id,
+public record AgregarIlustracionACategoriaResource(
+        Long ilustracionId, // null para nueva, Long para existente
         String titulo,
         String descripcion,
         String urlImagen,
-        List<CategoriaResource> categorias
+        Boolean publicada
 ) {
 }

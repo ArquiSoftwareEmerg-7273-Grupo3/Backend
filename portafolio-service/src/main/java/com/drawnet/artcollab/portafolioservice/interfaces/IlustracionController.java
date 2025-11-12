@@ -9,12 +9,16 @@ import com.drawnet.artcollab.portafolioservice.domain.model.queries.ObtenerResum
 import com.drawnet.artcollab.portafolioservice.domain.services.PortafolioCommandService;
 import com.drawnet.artcollab.portafolioservice.interfaces.rest.resources.PublicarIlustracionResource;
 import com.drawnet.artcollab.portafolioservice.interfaces.rest.transform.PublicarIlustracionCommandFromResourceAssembler;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
 @RestController
+@Tag(name = "Ilustraciones", description = "Gestión de ilustraciones en portafolios")
 @RequestMapping("/api/v1/ilustraciones")
 public class IlustracionController {
 

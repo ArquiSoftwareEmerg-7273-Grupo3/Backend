@@ -2,11 +2,11 @@ package com.drawnet.artcollab.portafolioservice.interfaces.rest.resources;
 
 import java.util.List;
 
-public record PortafolioResource(
+public record CategoriaResource(
         Long id,
-        String titulo,
+        String nombre,
         String descripcion,
-        String urlImagen,
-        List<CategoriaResource> categorias
+        Integer orden,
+        List<IlustracionResource> ilustraciones
 ) {
 }

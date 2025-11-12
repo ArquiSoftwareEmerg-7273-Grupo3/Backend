@@ -1,6 +1,7 @@
 package com.drawnet.artcollab.profiles.interfaces.rest;
 
 import com.drawnet.artcollab.profiles.domain.services.IlustradorCommandService;
+import com.drawnet.artcollab.profiles.infrastructure.persistence.jpa.repositories.IlustradorRepository;
 import com.drawnet.artcollab.profiles.interfaces.rest.resources.CreateIlustradorResource;
 import com.drawnet.artcollab.profiles.interfaces.rest.resources.IlustradorResource;
 import com.drawnet.artcollab.profiles.interfaces.rest.transform.CreateIlustradorCommandFromResourceAssembler;
@@ -18,9 +19,12 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Ilustradores", description = "Endpoints de Gestión de Ilustradores")
 public class IlustradoresController {
     private final IlustradorCommandService ilustradorCommandService;
+    private final IlustradorRepository ilustradorRepository;
 
-    public IlustradoresController(IlustradorCommandService ilustradorCommandService) {
+    public IlustradoresController(IlustradorCommandService ilustradorCommandService,
+                                  IlustradorRepository ilustradorRepository) {
         this.ilustradorCommandService = ilustradorCommandService;
+        this.ilustradorRepository = ilustradorRepository;
     }
 
     @PostMapping
@@ -37,6 +41,20 @@ public class IlustradoresController {
         if (ilustrador.isEmpty()) return ResponseEntity.badRequest().build();
         var ilustradorResource = IlustradorResourceFromEntityAssembler.toResourceFromEntity(ilustrador.get());
         return new ResponseEntity<>(ilustradorResource, HttpStatus.CREATED);
+    }
+
+    /**
+     * Obtiene un ilustrador por su userId.
+     * Este endpoint es usado por otros microservicios para convertir userId → ilustradorId.
+     */
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<IlustradorResource> getIlustradorByUserId(@PathVariable Long userId) {
+        var ilustrador = ilustradorRepository.findByUserId(userId);
+        if (ilustrador.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        var ilustradorResource = IlustradorResourceFromEntityAssembler.toResourceFromEntity(ilustrador.get());
+        return ResponseEntity.ok(ilustradorResource);
     }
 
     // Método auxiliar para extraer userId del UserDetails
