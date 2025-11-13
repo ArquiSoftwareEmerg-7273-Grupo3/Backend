@@ -63,45 +63,27 @@ public class PostulacionController {
     @Operation(summary = "Crear una postulación", description = "Crea una postulación con los datos proporcionados en el cuerpo de la solicitud")
     @ApiResponse(responseCode = "201", description = "Postulación creado exitosamente")
     @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
-    //@PostMapping
-    //public ResponseEntity<PostulacionResource> createPostulacion(@RequestBody CreatePostulacionResource resource) {
-    //    Optional<Postulacion> postulacion = postulacionCommandService
-    //            .handle(CreatePostulacionCommandFromResourceAssembler.toCommandFromResource(resource));
-    //    return postulacion.map(source -> new ResponseEntity<>(PostulacionResourceFromEntityAssembler.toResourceFromEntity(source), CREATED))
-    //            .orElseGet(() -> ResponseEntity.badRequest().build());
-    //}
-    //@PostMapping("/proyecto/{proyectoId}")
-    //public ResponseEntity<PostulacionResource> createPostulacion(
-    //        @PathVariable Long proyectoId,
-    //        @RequestBody CreatePostulacionResource resource,
-    //        @RequestParam Long ilustradorId) { // Recibe ilustradorId directamente
-//
-    //    var command = new CreatePostulacionCommand(
-    //            proyectoId,
-    //            ilustradorId,
-    //            "EN ESPERA",
-    //            resource.fecha()
-    //    );
-    //    Optional<Postulacion> postulacion = postulacionCommandService.handle(command);
-//
-    //    return postulacion.map(source -> new ResponseEntity<>(
-    //                    PostulacionResourceFromEntityAssembler.toResourceFromEntity(source), CREATED))
-    //            .orElseGet(() -> ResponseEntity.badRequest().build());
-    //}
-    @PostMapping("/proyecto/{proyectoId}/ilustrador/{ilustradorId}")
+   
+    @PostMapping("postular/proyecto/{proyectoId}")
     public ResponseEntity<?> crearPostulacion(
             @PathVariable Long proyectoId,
-            @PathVariable Long ilustradorId,
+            @Parameter(hidden = true) @RequestHeader("Authorization") String authHeader,
             @RequestBody CreatePostulacionResource resource) {
         try {
-            UserResource user = usuarioCliente.verificarUsuario(ilustradorId);
-            if (user == null) {
-                return ResponseEntity.status(404).body("Usuario no encontrado.");
-            }
+            String token = jwtService.cleanToken(authHeader);
+            Long userId = jwtService.extractUserId(token);
 
-            if (!"ILUSTRADOR".equals(user.role())) {
+            if (!jwtService.isIlustrador(token)) {
                 return ResponseEntity.status(403).body("El usuario no tiene el rol de ILUSTRADOR.");
             }
+
+            var ilustrador = ilustradorClient.getIlustradorByUserId(userId);
+
+            if (ilustrador == null){
+                return ResponseEntity.status(404).body("No se encontró un perfil de ilustrador para este usuario. Debe crear su perfil primero.");
+            }
+
+            Long ilustradorId = ilustrador.id();
 
             var command = CreatePostulacionCommandFromResourceAssembler.toCommandFromResource(proyectoId, ilustradorId, resource);
             var result = postulacionCommandService.handle(command);
@@ -234,7 +216,7 @@ public class PostulacionController {
                 return ResponseEntity.status(403).body("Solo ilustradores pueden cancelar sus postulaciones");
             }
             
-            var ilustrador = ilustradorClient.obtenerIlustradorPorUserId(userId);
+            var ilustrador = ilustradorClient.getIlustradorByUserId(userId);
             if (ilustrador == null) {
                 return ResponseEntity.status(404).body("Perfil de ilustrador no encontrado");
             }
@@ -264,7 +246,7 @@ public class PostulacionController {
                 return ResponseEntity.status(403).body("Solo ilustradores pueden ver sus postulaciones");
             }
             
-            var ilustrador = ilustradorClient.obtenerIlustradorPorUserId(userId);
+            var ilustrador = ilustradorClient.getIlustradorByUserId(userId);
             if (ilustrador == null) {
                 return ResponseEntity.status(404).body("Perfil de ilustrador no encontrado");
             }

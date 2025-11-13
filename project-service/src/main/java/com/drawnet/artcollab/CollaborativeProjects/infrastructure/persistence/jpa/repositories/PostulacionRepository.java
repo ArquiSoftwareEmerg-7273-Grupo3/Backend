@@ -1,7 +1,10 @@
 package com.drawnet.artcollab.CollaborativeProjects.infrastructure.persistence.jpa.repositories;
 
-import com.drawnet.artcollab.CollaborativeProjects.domain.model.entities.Postulacion;
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.aggregates.Postulacion;
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.valueobjects.EstadoPostulacion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,4 +17,13 @@ public interface PostulacionRepository extends JpaRepository<Postulacion, Long> 
     boolean existsByIlustradorId(Long ilustradorId);
     List<Postulacion> findByProyectoId(Long proyectoId);
     List<Postulacion> findByIlustradorId(Long ilustradorId);
+    
+    @Query("SELECT COUNT(p) > 0 FROM Postulacion p WHERE p.proyectoId = :proyectoId AND p.ilustradorId = :ilustradorId AND p.estado = :estado")
+    boolean hasActivePostulacion(@Param("proyectoId") Long proyectoId, @Param("ilustradorId") Long ilustradorId, @Param("estado") EstadoPostulacion estado);
+    
+    default boolean hasActivePostulacion(Long proyectoId, Long ilustradorId) {
+        return hasActivePostulacion(proyectoId, ilustradorId, EstadoPostulacion.EN_ESPERA);
+    }
+    
+    long countByProyectoId(Long proyectoId);
 }

@@ -1,6 +1,6 @@
 package com.drawnet.artcollab.CollaborativeProjects.application.internal.queryservices;
 
-import com.drawnet.artcollab.CollaborativeProjects.domain.model.entities.Postulacion;
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.aggregates.Postulacion;
 import com.drawnet.artcollab.CollaborativeProjects.domain.model.queries.GetAllPostulacionesQuery;
 import com.drawnet.artcollab.CollaborativeProjects.domain.services.PostulacionQueryService;
 import com.drawnet.artcollab.CollaborativeProjects.infrastructure.persistence.jpa.repositories.PostulacionRepository;

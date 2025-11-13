@@ -6,7 +6,7 @@
         <groupId>com.drawnet</groupId>
         <artifactId>artcollab-platform</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>CollaborativeProjectsService</artifactId>
@@ -16,7 +16,7 @@
     <url/>
 
     <properties>
-        <java.version>22</java.version>
+        <java.version>21</java.version>
     </properties>
     <dependencies>
         <dependency>
@@ -54,12 +54,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.github.encryptorcode/pluralize -->
-        <dependency>
-            <groupId>io.github.encryptorcode</groupId>
-            <artifactId>pluralize</artifactId>
-            <version>1.0.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.github.encryptorcode/pluralize -->
         <dependency>

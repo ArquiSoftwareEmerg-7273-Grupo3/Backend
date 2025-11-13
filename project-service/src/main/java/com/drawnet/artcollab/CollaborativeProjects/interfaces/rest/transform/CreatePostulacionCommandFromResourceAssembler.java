@@ -8,8 +8,8 @@ public class CreatePostulacionCommandFromResourceAssembler {
         return new CreatePostulacionCommand(
                 proyectoId,
                 ilustradorId,
-                "EN ESPERA",
                 "En espera de revisión",
+                "EN_ESPERA",
                 resource.fecha()
         );
     }

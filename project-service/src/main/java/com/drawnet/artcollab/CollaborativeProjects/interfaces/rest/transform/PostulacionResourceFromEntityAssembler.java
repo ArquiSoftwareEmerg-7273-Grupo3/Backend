@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
-import com.drawnet.artcollab.CollaborativeProjects.domain.model.entities.Postulacion;
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.aggregates.Postulacion;
 import com.drawnet.artcollab.CollaborativeProjects.interfaces.rest.resources.PostulacionResource;
 
 public class PostulacionResourceFromEntityAssembler {
