@@ -1,4 +1,4 @@
-package com.drawnet.artcollab.CollaborativeProjects.domain.model.entities;
+package com.drawnet.artcollab.CollaborativeProjects.domain.model.aggregates;
 
 import com.drawnet.artcollab.CollaborativeProjects.domain.model.commands.CreatePostulacionCommand;
 import com.drawnet.artcollab.CollaborativeProjects.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
@@ -26,7 +26,6 @@ public class Postulacion extends AuditableAbstractAggregateRoot<Postulacion> {
     @Column(name = "id_ilustrador")
     private Long ilustradorId;
 
-
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -44,6 +43,9 @@ public class Postulacion extends AuditableAbstractAggregateRoot<Postulacion> {
 
     @Column(name = "fecha_respuesta")
     private LocalDateTime fechaRespuesta;
+    
+    @Column(name = "fecha_visualizacion")
+    private LocalDateTime fechaVisualizacion; // Cuando el escritor vio la postulación
 
     protected Postulacion() {}
 
@@ -55,58 +57,48 @@ public class Postulacion extends AuditableAbstractAggregateRoot<Postulacion> {
         this.fechaPostulacion = LocalDateTime.now();
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public Long getProyectoId() {
-        return proyectoId;
-    }
-
-    public EstadoPostulacion getEstado() {
-        return estado;
-    }
-    public EstadoPostulacion setEstado(EstadoPostulacion estado) {
-        return this.estado = estado;
-    }   
-
-    public Long getIlustradorId() {
-        return ilustradorId;
-    }
-
-    public LocalDateTime getFechaPostulacion() {
-        return fechaPostulacion;
-    }
-
-    public LocalDateTime getFechaRespuesta() {
-        return fechaRespuesta;
-    }
-
     // Métodos de negocio
-    public void aprobar(String respuesta) {
-        if (this.estado != EstadoPostulacion.EN_ESPERA) {
-            throw new IllegalStateException("Solo se pueden aprobar postulaciones en espera");
-        }
+    public void aprobar(String respuesta, Long escritorId) {
+        validarEstadoEnEspera();
         this.estado = EstadoPostulacion.APROBADA;
         this.respuesta = respuesta;
         this.fechaRespuesta = LocalDateTime.now();
     }
 
-    public void rechazar(String razon) {
-        if (this.estado != EstadoPostulacion.EN_ESPERA) {
-            throw new IllegalStateException("Solo se pueden rechazar postulaciones en espera");
-        }
+    public void rechazar(String razon, Long escritorId) {
+        validarEstadoEnEspera();
         this.estado = EstadoPostulacion.RECHAZADA;
         this.respuesta = razon;
         this.fechaRespuesta = LocalDateTime.now();
     }
 
-    public void cancelar() {
-        if (this.estado != EstadoPostulacion.EN_ESPERA) {
-            throw new IllegalStateException("Solo se pueden cancelar postulaciones en espera");
+    public void cancelar(Long ilustradorId) {
+        validarEstadoEnEspera();
+        if (!this.ilustradorId.equals(ilustradorId)) {
+            throw new IllegalStateException("Solo el ilustrador que creó la postulación puede cancelarla");
         }
         this.estado = EstadoPostulacion.CANCELADA;
         this.fechaRespuesta = LocalDateTime.now();
+    }
+    
+    public void marcarComoVista() {
+        if (this.fechaVisualizacion == null) {
+            this.fechaVisualizacion = LocalDateTime.now();
+        }
+    }
+
+    private void validarEstadoEnEspera() {
+        if (this.estado != EstadoPostulacion.EN_ESPERA) {
+            throw new IllegalStateException("Solo se pueden modificar postulaciones en espera");
+        }
+    }
+
+    public boolean perteneceAIlustrador(Long ilustradorId) {
+        return this.ilustradorId.equals(ilustradorId);
+    }
+
+    public boolean perteneceAProyecto(Long proyectoId) {
+        return this.proyectoId.equals(proyectoId);
     }
 
     public boolean isEnEspera() {
@@ -115,5 +107,13 @@ public class Postulacion extends AuditableAbstractAggregateRoot<Postulacion> {
 
     public boolean isAprobada() {
         return this.estado == EstadoPostulacion.APROBADA;
+    }
+    
+    public boolean isRechazada() {
+        return this.estado == EstadoPostulacion.RECHAZADA;
+    }
+    
+    public boolean isCancelada() {
+        return this.estado == EstadoPostulacion.CANCELADA;
     }
 }

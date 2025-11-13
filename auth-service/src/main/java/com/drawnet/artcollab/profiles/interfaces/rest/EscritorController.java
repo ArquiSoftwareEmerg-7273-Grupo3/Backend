@@ -2,6 +2,7 @@ package com.drawnet.artcollab.profiles.interfaces.rest;
 
 
 import com.drawnet.artcollab.profiles.domain.services.EscritorCommandService;
+import com.drawnet.artcollab.profiles.infrastructure.persistence.jpa.repositories.EscritorRepository;
 import com.drawnet.artcollab.profiles.interfaces.rest.resources.CreateEscritorResource;
 import com.drawnet.artcollab.profiles.interfaces.rest.resources.EscritorResource;
 import com.drawnet.artcollab.profiles.interfaces.rest.transform.CreateEscritorCommandFromResourceAssembler;
@@ -20,9 +21,11 @@ import org.springframework.web.bind.annotation.*;
 public class EscritorController {
 
     private final EscritorCommandService escritorCommandService;
+    private final EscritorRepository escritorRepository;
 
-    public EscritorController(EscritorCommandService escritorCommandService) {
+    public EscritorController(EscritorCommandService escritorCommandService, EscritorRepository escritorRepository) {
         this.escritorCommandService = escritorCommandService;
+        this.escritorRepository = escritorRepository;
     }
 
     @PostMapping
@@ -38,6 +41,14 @@ public class EscritorController {
         if (escritor.isEmpty()) return ResponseEntity.badRequest().build();
         var escritorResource = EscritorResourceFromEntityAssembler.toResourceFromEntity(escritor.get());
         return new ResponseEntity<>(escritorResource, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/by-user/{userId}")
+    public ResponseEntity<EscritorResource> getEscritorByUserId(@PathVariable Long userId) {
+        var escritor = escritorRepository.findByUserId(userId);
+        if (escritor.isEmpty()) return ResponseEntity.notFound().build();
+        var escritorResource = EscritorResourceFromEntityAssembler.toResourceFromEntity(escritor.get());
+        return ResponseEntity.ok(escritorResource);
     }
 
     // Método auxiliar para extraer userId del UserDetails

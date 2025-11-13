@@ -2,7 +2,7 @@ package com.drawnet.artcollab.CollaborativeProjects.domain.model.commands;
 
 import java.util.Date;
 
-public record CreatePostulacionCommand(Long proyectoId, Long ilustradorId, String estado, Date fecha) {
+public record CreatePostulacionCommand(Long proyectoId, Long ilustradorId, String mensaje,String estado, Date fecha) {
     public CreatePostulacionCommand {
         if (proyectoId == null || proyectoId < 0) {
             throw new IllegalArgumentException("ProyectoId no puede ser nulo o menor que 0");

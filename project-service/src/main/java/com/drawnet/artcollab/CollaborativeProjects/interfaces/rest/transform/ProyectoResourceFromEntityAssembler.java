@@ -11,8 +11,10 @@ public class ProyectoResourceFromEntityAssembler {
                 entity.getEscritorId(),
                 entity.getTitulo(),
                 entity.getDescripcion(),
-                entity.getUrlImagen(),
-                entity.getFecha()
+                entity.getFechaFin(),
+                entity.getFechaInicio(),
+                entity.getPresupuesto(),
+                entity.getMaxPostulaciones()
         );
     }
 }

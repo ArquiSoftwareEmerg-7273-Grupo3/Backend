@@ -8,6 +8,7 @@ import com.drawnet.artcollab.CollaborativeProjects.infrastructure.persistence.jp
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProyectoQueryServiceImpl implements ProyectoQueryService {
@@ -26,5 +27,10 @@ public class ProyectoQueryServiceImpl implements ProyectoQueryService {
     @Override
     public List<Proyecto> getByEscritorId(Long escritorId) {
         return proyectoRepository.findByEscritorId(escritorId);
+    }
+
+    @Override
+    public Optional<Proyecto> getById(Long id) {
+        return proyectoRepository.findById(id);
     }
 }

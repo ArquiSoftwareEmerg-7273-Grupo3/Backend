@@ -9,6 +9,7 @@ public class CreatePostulacionCommandFromResourceAssembler {
                 proyectoId,
                 ilustradorId,
                 "EN ESPERA",
+                "En espera de revisión",
                 resource.fecha()
         );
     }
