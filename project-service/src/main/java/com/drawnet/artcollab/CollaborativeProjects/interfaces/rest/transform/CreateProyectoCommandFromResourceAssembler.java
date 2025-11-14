@@ -16,6 +16,10 @@ public class CreateProyectoCommandFromResourceAssembler {
                 resource.titulo(),
                 resource.descripcion(),
                 resource.presupuesto(),
+                resource.modalidadProyecto(),
+                resource.contratoProyecto(),
+                resource.especialidadProyecto(),
+                resource.requisitos(),
                 fechaInicio,
                 fechaFin,
                 resource.maxPostulaciones()
