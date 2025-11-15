@@ -8,7 +8,12 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.valueobjects.ContratoProyecto;
 import com.drawnet.artcollab.CollaborativeProjects.domain.model.valueobjects.EstadoProyecto;
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.valueobjects.ModalidadProyecto;
+import com.drawnet.artcollab.CollaborativeProjects.domain.model.valueobjects.EspecialidadProyecto;
+
 
 @Entity
 
@@ -38,6 +43,25 @@ public class Proyecto extends AuditableAbstractAggregateRoot<Proyecto> {
     @Column(length = 20)
     private EstadoProyecto estado;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "modalidad_proyecto", nullable = false)
+    private ModalidadProyecto modalidadProyecto;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "contrato_proyecto", nullable = false)
+    private ContratoProyecto contratoProyecto;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "especialidad_proyecto", nullable = false)
+    private EspecialidadProyecto especialidadProyecto;
+
+    @NotNull
+    @Column(name="requisitos",nullable = false)
+    private String requisitos;
+
     @Column(name = "fecha_inicio")
     private LocalDateTime fechaInicio;
 
@@ -58,6 +82,10 @@ public class Proyecto extends AuditableAbstractAggregateRoot<Proyecto> {
         this.descripcion = command.descripcion();
         this.presupuesto = command.presupuesto();
         this.estado = EstadoProyecto.ABIERTO;
+        this.modalidadProyecto = command.modalidadProyecto();
+        this.contratoProyecto = command.contratoProyecto();
+        this.especialidadProyecto = command.especialidadProyecto();
+        this.requisitos = command.requisitos();
         this.fechaInicio = command.fechaInicio();
         this.fechaFin = command.fechaFin();
         this.maxPostulaciones = command.maxPostulaciones() != null ? command.maxPostulaciones() : 50;
@@ -107,6 +135,10 @@ public class Proyecto extends AuditableAbstractAggregateRoot<Proyecto> {
     public String getDescripcion() { return descripcion; }
     public BigDecimal getPresupuesto() { return presupuesto; }
     public EstadoProyecto getEstado() { return estado; }
+    public ModalidadProyecto getModalidadProyecto() { return modalidadProyecto; }
+    public ContratoProyecto getContratoProyecto() { return contratoProyecto; }
+    public EspecialidadProyecto getEspecialidadProyecto() { return especialidadProyecto; }
+    public String getRequisitos() { return requisitos; }
     public LocalDateTime getFechaInicio() { return fechaInicio; }
     public LocalDateTime getFechaFin() { return fechaFin; }
     public Integer getMaxPostulaciones() { return maxPostulaciones; }

@@ -61,9 +61,6 @@ public class PostulacionController {
     }
 
     @Operation(summary = "Crear una postulación", description = "Crea una postulación con los datos proporcionados en el cuerpo de la solicitud")
-    @ApiResponse(responseCode = "201", description = "Postulación creado exitosamente")
-    @ApiResponse(responseCode = "400", description = "Solicitud incorrecta")
-   
     @PostMapping("postular/proyecto/{proyectoId}")
     public ResponseEntity<?> crearPostulacion(
             @PathVariable Long proyectoId,
@@ -100,10 +97,6 @@ public class PostulacionController {
     }
 
     @Operation(summary = "Obtener postulaciones", description = "Obtiene todas las postulaciones en la solicitud")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Postulaciones encontradas"),
-            @ApiResponse(responseCode = "404", description = "Postulaciones no encontradas")
-    })
     @GetMapping
     public ResponseEntity<List<PostulacionResource>> getAllPostulaciones() {
         List<Postulacion> postulaciones = postulacionQueryService
@@ -114,10 +107,6 @@ public class PostulacionController {
     }
 
     @Operation(summary = "Obtener postulaciones por ilustrador", description = "Obtiene todas las postulaciones por ilustrador en la solicitud")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Postulaciones encontradas"),
-            @ApiResponse(responseCode = "404", description = "Postulaciones no encontradas")
-    })
     @GetMapping("/ilustradorId/{ilustradorId}")
     public ResponseEntity<List<PostulacionResource>> getPostulacionesByIlustradorId(@PathVariable Long ilustradorId) {
         List<Postulacion> postulaciones = postulacionQueryService.getByIlustradorId(ilustradorId);
@@ -127,10 +116,6 @@ public class PostulacionController {
     }
 
     @Operation(summary = "Obtener postulaciones por proyecto", description = "Obtiene todas las postulaciones por proyecto en la solicitud")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Postulaciones encontradas"),
-            @ApiResponse(responseCode = "404", description = "Postulaciones no encontradas")
-    })
     @GetMapping("/proyectoId/{proyectoId}")
     public ResponseEntity<List<PostulacionResource>> getPostulacionesByProyectoId(@PathVariable Long proyectoId) {
         List<Postulacion> postulaciones = postulacionQueryService.getByProyectoId(proyectoId);

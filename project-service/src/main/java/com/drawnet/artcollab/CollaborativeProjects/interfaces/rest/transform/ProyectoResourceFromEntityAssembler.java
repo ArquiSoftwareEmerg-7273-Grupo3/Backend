@@ -14,6 +14,11 @@ public class ProyectoResourceFromEntityAssembler {
                 entity.getFechaFin(),
                 entity.getFechaInicio(),
                 entity.getPresupuesto(),
+                entity.getEstado(),
+                entity.getModalidadProyecto(),
+                entity.getContratoProyecto(),
+                entity.getEspecialidadProyecto(),
+                entity.getRequisitos(),
                 entity.getMaxPostulaciones()
         );
     }
