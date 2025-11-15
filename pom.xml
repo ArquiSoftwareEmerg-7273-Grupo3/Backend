@@ -78,15 +78,10 @@
     <modules>
 
         <module>auth-service</module>
-        <module>chat-service</module>
         <module>project-service</module>
-        <module>portafolio-service</module>
         <module>monetization-service</module>
         <module>api-gateway</module>
         <module>discovery-server</module>
-        <module>libro-service</module>
-        <module>feed-service</module>
-        <module>notification-service</module>
 
 
 
