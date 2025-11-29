@@ -37,6 +37,9 @@ public class Escritor extends AuditableAbstractAggregateRoot<Escritor> {
     @Column(name = "tipo_empresa")
     private String tipoEmpresa; // no obligatorio
 
+    @Column(name = "subscripcion")
+    private Boolean subscripcion = false;  // Siempre inicia en false
+
     public Escritor(){}
 
     public Escritor(CreateEscritorCommand command, User user) {
@@ -47,6 +50,7 @@ public class Escritor extends AuditableAbstractAggregateRoot<Escritor> {
         this.logo = command.logo();
         this.ubicacionEmpresa = command.ubicacionEmpresa();
         this.tipoEmpresa = command.tipoEmpresa();
+        this.subscripcion = false;  // Siempre inicia en false
         this.user = user;
     }
 
@@ -84,6 +88,20 @@ public class Escritor extends AuditableAbstractAggregateRoot<Escritor> {
 
     public Long getUserId() {
         return user != null ? user.getId() : null;
+    }
+
+    public Boolean getSubscripcion() {
+        return subscripcion;
+    }
+
+    // Método para activar suscripción
+    public void activarSubscripcion() {
+        this.subscripcion = true;
+    }
+
+    // Método para desactivar suscripción
+    public void desactivarSubscripcion() {
+        this.subscripcion = false;
     }
 }
 

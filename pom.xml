@@ -72,6 +72,7 @@
         </dependency>
 
 
+
     </dependencies>
 
     <!-- Aquí defines los microservicios como módulos -->
@@ -111,6 +112,11 @@
     </build>
 
     <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
         <repository>
             <id>netflix-candidates</id>
             <name>Netflix Candidates</name>
