@@ -9,6 +9,8 @@ import com.drawnet.artcollab.notificacionservice.domain.model.queries.GetNotific
 import com.drawnet.artcollab.notificacionservice.domain.model.queries.GetUnreadNotificationsByUserQuery;
 import com.drawnet.artcollab.notificacionservice.domain.services.NotificationCommandService;
 import com.drawnet.artcollab.notificacionservice.domain.services.NotificationQueryService;
+import com.drawnet.artcollab.notificacionservice.domain.model.commands.CreateNotificationCommand;
+import com.drawnet.artcollab.notificacionservice.interfaces.rest.resources.CreateGenericNotificationResource;
 import com.drawnet.artcollab.notificacionservice.interfaces.rest.resources.CreateNotificationFromCommentResource;
 import com.drawnet.artcollab.notificacionservice.interfaces.rest.resources.CreateNotificationFromReactionOnPostResource;
 import com.drawnet.artcollab.notificacionservice.interfaces.rest.resources.MarkNotificationAsReadResource;
@@ -31,6 +33,7 @@ import static java.util.stream.Collectors.toList;
 public class NotificationController {
     private final NotificationCommandService notificationCommandService;
     private final NotificationQueryService notificationQueryService;
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(NotificationController.class);
 
     @GetMapping
     public ResponseEntity<List<NotificationResource>> getAllByUser(
@@ -111,5 +114,34 @@ public class NotificationController {
                 .map(NotificationResourceFromEntityAssembler::toResource)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/generic")
+    public ResponseEntity<NotificationResource> createGenericNotification(
+            @RequestBody CreateGenericNotificationResource resource
+    ) {
+        try {
+            CreateNotificationCommand command = new CreateNotificationCommand(
+                    resource.recipientUserId(),
+                    resource.actorUserId(),
+                    resource.type(),
+                    resource.title(),
+                    resource.message(),
+                    resource.priority(),
+                    resource.relatedEntityType(),
+                    resource.relatedEntityId(),
+                    resource.actionUrl(),
+                    resource.metadata(),
+                    resource.expiresAt()
+            );
+
+            return notificationCommandService.handle(command)
+                    .map(NotificationResourceFromEntityAssembler::toResource)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.badRequest().build());
+        } catch (Exception e) {
+            logger.error("Error creating generic notification: ", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

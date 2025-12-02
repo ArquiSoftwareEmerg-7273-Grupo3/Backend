@@ -5,6 +5,7 @@ import com.drawnet.artcollab.iam.domain.model.queries.GetAllUsersQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdAndRolQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdWithProfilesQuery;
+import com.drawnet.artcollab.iam.domain.model.queries.SearchUsersByNameQuery;
 import com.drawnet.artcollab.iam.domain.services.UserQueryService;
 import com.drawnet.artcollab.iam.interfaces.rest.resources.UserResource;
 import com.drawnet.artcollab.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
@@ -16,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -79,6 +81,25 @@ public class UsersController {
         // Convertir a resource con toda la información
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
         return ResponseEntity.ok(userResource);
+    }
+
+    /**
+     * Endpoint para buscar usuarios por nombre o apellido
+     * GET /api/v1/users/search?q=searchTerm
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<UserResource>> searchUsers(@RequestParam("q") String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        var searchQuery = new SearchUsersByNameQuery(searchTerm.trim());
+        var users = userQueryService.handle(searchQuery);
+        var userResources = users.stream()
+                .map(UserResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+        
+        return ResponseEntity.ok(userResources);
     }
 
     // Método auxiliar para extraer userId del UserDetails

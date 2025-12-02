@@ -2,9 +2,12 @@ package com.drawnet.feed_service.application.internal.commandservices;
 
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.entities.Reaction;
+import com.drawnet.feed_service.infrastructure.clients.NotificationClient;
+import com.drawnet.feed_service.infrastructure.clients.dto.CreateNotificationFromReactionRequest;
 import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.*;
 import com.drawnet.feed_service.application.services.WebSocketService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,11 +16,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ReactionCommandService {
 
     private final ReactionRepository reactionRepository;
     private final PostRepository postRepository;
     private final WebSocketService webSocketService;
+    private final NotificationClient notificationClient;
 
     public Optional<Long> handle(CreateReactionCommand command) {
         return postRepository.findById(command.postId())
@@ -54,6 +59,30 @@ public class ReactionCommandService {
                                 post.getReactionsCount(), 
                                 command.userId()
                         );
+                        
+                        // Crear notificación (solo si quien reacciona NO es el autor del post)
+                        if (!post.getUserId().equals(command.userId().toString())) {
+                            try {
+                                CreateNotificationFromReactionRequest notificationRequest = 
+                                    new CreateNotificationFromReactionRequest(
+                                        command.postId(),
+                                        command.userId(),
+                                        command.reactionType().name()
+                                    );
+                                
+                                notificationClient.createNotificationFromReaction(
+                                    Long.parseLong(post.getUserId()),
+                                    notificationRequest
+                                );
+                                
+                                log.info("Notification created for reaction {} on post {}", 
+                                    savedReaction.getId(), command.postId());
+                            } catch (Exception e) {
+                                // Log pero no fallar la operación principal
+                                log.error("Failed to create notification for reaction {} on post {}: {}", 
+                                    savedReaction.getId(), command.postId(), e.getMessage());
+                            }
+                        }
                         
                         return savedReaction.getId();
                     }

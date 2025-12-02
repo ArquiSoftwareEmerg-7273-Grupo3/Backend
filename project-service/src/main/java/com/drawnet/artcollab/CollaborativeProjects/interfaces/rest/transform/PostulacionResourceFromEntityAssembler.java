@@ -10,14 +10,15 @@ import com.drawnet.artcollab.CollaborativeProjects.interfaces.rest.resources.Pos
 public class PostulacionResourceFromEntityAssembler {
 
     public static PostulacionResource toResourceFromEntity(Postulacion entity) {
-        LocalDateTime fechaPostulacion = entity.getFechaPostulacion();
-
         return new PostulacionResource(
                 entity.getId(),
                 entity.getProyectoId(),
                 entity.getIlustradorId(),
                 entity.getEstado(),
-                fechaPostulacion
+                entity.getFechaPostulacion(),
+                entity.getMensaje(),
+                entity.getRespuesta(),
+                entity.getFechaRespuesta()
         );
     }
 

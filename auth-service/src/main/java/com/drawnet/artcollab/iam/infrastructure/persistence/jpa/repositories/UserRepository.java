@@ -18,4 +18,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // Método para cargar usuario con todos sus perfiles relacionados (sin JPQL)
     @EntityGraph(attributePaths = {"ilustrador", "escritor"})
     Optional<User> findWithProfilesById(Long id);
+    
+    // Método para buscar usuarios por nombre o apellido
+    @EntityGraph(attributePaths = {"ilustrador", "escritor", "role"})
+    java.util.List<User> findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(String nombres, String apellidos);
 }

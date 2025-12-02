@@ -9,17 +9,20 @@ public class NotificationResourceFromEntityAssembler {
 
         return new NotificationResource(
                 notification.getId(),
-                notification.getRecipientId(),
-                notification.getActorId(),
-                notification.getPostId(),
-                notification.getCommentId(),
+                notification.getRecipientUserId(),
+                notification.getActorUserId(),
                 notification.getType() != null ? notification.getType().name() : null,
-                notification.getSourceType() != null ? notification.getSourceType().name() : null,
-                notification.getStatus() != null ? notification.getStatus().name() : null,
+                notification.getTitle(),
                 notification.getMessage(),
-                notification.isActive(),
+                notification.getPriority() != null ? notification.getPriority().name() : null,
+                notification.getIsRead(),
+                notification.getReadAt(),
+                notification.getRelatedEntityId(),
+                notification.getRelatedEntityType(),
+                notification.getActionUrl(),
                 notification.getCreatedAt(),
-                notification.getReadAt()
+                notification.getExpiresAt(),
+                notification.getActive()
         );
     }
 }

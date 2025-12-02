@@ -72,6 +72,9 @@ public class MercadoPagoService {
             .unitPrice(price)
             .build());
         
+        // URLs de retorno - actualiza con tus URLs reales
+        String baseUrl = "http://localhost:4200";
+        
         PreferenceRequest request = PreferenceRequest.builder()
             .items(items)
             .payer(PreferencePayerRequest.builder()
@@ -80,11 +83,12 @@ public class MercadoPagoService {
                 .surname(lastName)
                 .build())
             .backUrls(PreferenceBackUrlsRequest.builder()
-                .success("https://www.mercadopago.com.pe")
-                .failure("https://www.mercadopago.com.pe")
-                .pending("https://www.mercadopago.com.pe")
+                .success(baseUrl + "/suscription/success")
+                .failure(baseUrl + "/suscription/success")
+                .pending(baseUrl + "/suscription/success")
                 .build())
-            .autoReturn("approved")
+            // autoReturn removido - no funciona con localhost
+            // .notificationUrl("https://your-ngrok-url.ngrok.io/api/mercadopago/webhook")  // Webhook - requiere URL pública
             .build();
         
         return client.create(request);

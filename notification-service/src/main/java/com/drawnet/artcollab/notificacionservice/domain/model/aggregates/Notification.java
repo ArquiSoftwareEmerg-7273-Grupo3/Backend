@@ -1,105 +1,186 @@
 package com.drawnet.artcollab.notificacionservice.domain.model.aggregates;
 
-import com.drawnet.artcollab.notificacionservice.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
-
-import com.drawnet.artcollab.notificacionservice.domain.model.valueobjects.NotificationSourceType;
-import com.drawnet.artcollab.notificacionservice.domain.model.valueobjects.NotificationStatus;
+import com.drawnet.artcollab.notificacionservice.domain.model.valueobjects.NotificationPriority;
 import com.drawnet.artcollab.notificacionservice.domain.model.valueobjects.NotificationType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
+/**
+ * Agregado raíz para las notificaciones
+ * Representa una notificación enviada a un usuario
+ */
 @Entity
 @Table(name = "notifications")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@NoArgsConstructor
-public class Notification extends AuditableAbstractAggregateRoot<Notification> {
-
+public class Notification {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull(message = "Recipient ID cannot be null")
-    @Column(name = "recipient_id", nullable = false)
-    private Long recipientId;        // usuario que recibe la notificación (dueño del post/comentario)
-
-    @NotNull(message = "Actor ID cannot be null")
-    @Column(name = "actor_id", nullable = false)
-    private Long actorId;             // usuario que comenta o reacciona
-
-    @NotNull(message = "Notification type cannot be null")
+    
+    /**
+     * ID del usuario receptor de la notificación
+     */
+    @Column(name = "recipient_user_id", nullable = false)
+    private Long recipientUserId;
+    
+    /**
+     * ID del usuario que generó la acción (puede ser null para notificaciones del sistema)
+     */
+    @Column(name = "actor_user_id")
+    private Long actorUserId;
+    
+    /**
+     * Tipo de notificación
+     */
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false, length = 40)
+    @Column(nullable = false, length = 50)
     private NotificationType type;
-
-    @NotNull(message = "Notification source type cannot be null")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "source_type", nullable = false, length = 20)
-    private NotificationSourceType sourceType; // POST o COMMENT
-
-    @Column(name = "post_id")
-    private Long postId;
-
-    @Column(name = "comment_id")
-    private Long commentId;
-
-    @Size(max = 255, message = "Message cannot exceed 255 characters")
-    @Column(name = "message", length = 255)
+    
+    /**
+     * Título de la notificación
+     */
+    @Column(nullable = false, length = 255)
+    private String title;
+    
+    /**
+     * Mensaje de la notificación
+     */
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
-
-    @NotNull
+    
+    /**
+     * Prioridad de la notificación
+     */
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private NotificationStatus status = NotificationStatus.PENDIENTE;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
+    @Column(nullable = false, length = 20)
+    private NotificationPriority priority = NotificationPriority.NORMAL;
+    
+    /**
+     * Indica si la notificación ha sido leída
+     */
+    @Column(nullable = false)
+    private Boolean isRead = false;
+    
+    /**
+     * Fecha y hora en que se leyó la notificación
+     */
     @Column(name = "read_at")
     private LocalDateTime readAt;
-
-    @Column(name = "active", nullable = false)
-    private boolean active = true;
-
-    public Notification(
-            Long recipientId,
-            Long actorId,
-            NotificationType type,
-            NotificationSourceType sourceType,
-            Long postId,
-            Long commentId,
-            String message
-    ) {
-        this.recipientId = recipientId;
-        this.actorId = actorId;
+    
+    /**
+     * ID de la entidad relacionada (post, proyecto, comentario, etc.)
+     */
+    @Column(name = "related_entity_id")
+    private Long relatedEntityId;
+    
+    /**
+     * Tipo de entidad relacionada (POST, PROJECT, COMMENT, etc.)
+     */
+    @Column(name = "related_entity_type", length = 50)
+    private String relatedEntityType;
+    
+    /**
+     * URL de acción (para navegar al contenido relacionado)
+     */
+    @Column(name = "action_url", length = 500)
+    private String actionUrl;
+    
+    /**
+     * Datos adicionales en formato JSON (opcional)
+     */
+    @Column(columnDefinition = "TEXT")
+    private String metadata;
+    
+    /**
+     * Fecha de creación
+     */
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
+    /**
+     * Fecha de expiración (opcional, para notificaciones temporales)
+     */
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+    
+    /**
+     * Indica si la notificación está activa
+     */
+    @Column(nullable = false)
+    private Boolean active = true;
+    
+    // Constructores
+    public Notification() {
+    }
+    
+    public Notification(Long recipientUserId, Long actorUserId, NotificationType type, 
+                       String title, String message) {
+        this.recipientUserId = recipientUserId;
+        this.actorUserId = actorUserId;
         this.type = type;
-        this.sourceType = sourceType;
-        this.postId = postId;
-        this.commentId = commentId;
+        this.title = title;
         this.message = message;
-        this.status = NotificationStatus.PENDIENTE;
+        this.priority = NotificationPriority.NORMAL;
+        this.isRead = false;
+        this.active = true;
     }
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    
+    // Métodos de negocio
+    
+    /**
+     * Marca la notificación como leída
+     */
+    public void markAsRead() {
+        if (!this.isRead) {
+            this.isRead = true;
+            this.readAt = LocalDateTime.now();
+        }
     }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    
+    /**
+     * Marca la notificación como no leída
+     */
+    public void markAsUnread() {
+        this.isRead = false;
+        this.readAt = null;
     }
-
+    
+    /**
+     * Desactiva la notificación (soft delete)
+     */
+    public void deactivate() {
+        this.active = false;
+    }
+    
+    /**
+     * Verifica si la notificación ha expirado
+     */
+    public boolean isExpired() {
+        return expiresAt != null && LocalDateTime.now().isAfter(expiresAt);
+    }
+    
+    /**
+     * Establece la prioridad de la notificación
+     */
+    public void setPriorityLevel(NotificationPriority priority) {
+        this.priority = priority;
+    }
+    
+    /**
+     * Establece la información de la entidad relacionada
+     */
+    public void setRelatedEntity(String entityType, Long entityId, String actionUrl) {
+        this.relatedEntityType = entityType;
+        this.relatedEntityId = entityId;
+        this.actionUrl = actionUrl;
+    }
 }

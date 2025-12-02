@@ -6,6 +6,7 @@ import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdAndRolQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdWithProfilesQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByUsernameQuery;
+import com.drawnet.artcollab.iam.domain.model.queries.SearchUsersByNameQuery;
 import com.drawnet.artcollab.iam.domain.model.valueobjects.Roles;
 import com.drawnet.artcollab.iam.domain.services.UserQueryService;
 import com.drawnet.artcollab.iam.infrastructure.persistence.jpa.repositories.UserRepository;
@@ -47,5 +48,11 @@ public class UserQueryServiceImpl implements UserQueryService {
     @Override
     public Optional<User> handle(GetUserByIdWithProfilesQuery query) {
         return userRepository.findWithProfilesById(query.userId());
+    }
+
+    @Override
+    public List<User> handle(SearchUsersByNameQuery query) {
+        String searchTerm = query.searchTerm();
+        return userRepository.findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(searchTerm, searchTerm);
     }
 }

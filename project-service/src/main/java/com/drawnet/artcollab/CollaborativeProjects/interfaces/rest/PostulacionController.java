@@ -7,8 +7,11 @@ import com.drawnet.artcollab.CollaborativeProjects.domain.model.commands.Rechaza
 import com.drawnet.artcollab.CollaborativeProjects.domain.model.queries.GetAllPostulacionesQuery;
 import com.drawnet.artcollab.CollaborativeProjects.domain.services.PostulacionCommandService;
 import com.drawnet.artcollab.CollaborativeProjects.domain.services.PostulacionQueryService;
+import com.drawnet.artcollab.CollaborativeProjects.domain.services.ProyectoQueryService;
+import com.drawnet.artcollab.CollaborativeProjects.infrastructure.external.clients.CreateNotificationRequest;
 import com.drawnet.artcollab.CollaborativeProjects.infrastructure.external.clients.EscritorClient;
 import com.drawnet.artcollab.CollaborativeProjects.infrastructure.external.clients.IlustradorClient;
+import com.drawnet.artcollab.CollaborativeProjects.infrastructure.external.clients.NotificationClient;
 import com.drawnet.artcollab.CollaborativeProjects.infrastructure.external.clients.UsuarioCliente;
 import com.drawnet.artcollab.CollaborativeProjects.infrastructure.security.JwtService;
 import com.drawnet.artcollab.CollaborativeProjects.interfaces.rest.resources.AprobarPostulacionResource;
@@ -44,6 +47,8 @@ public class PostulacionController {
     private final JwtService jwtService;
     private final EscritorClient escritorClient;
     private final IlustradorClient ilustradorClient;
+    private final NotificationClient notificationClient;
+    private final ProyectoQueryService proyectoQueryService;
     private static final Logger logger = LoggerFactory.getLogger(PostulacionController.class);
 
     public PostulacionController(PostulacionCommandService postulacionCommandService, 
@@ -51,13 +56,17 @@ public class PostulacionController {
                                 UsuarioCliente usuarioCliente,
                                 JwtService jwtService,
                                 EscritorClient escritorClient,
-                                IlustradorClient ilustradorClient) {
+                                IlustradorClient ilustradorClient,
+                                NotificationClient notificationClient,
+                                ProyectoQueryService proyectoQueryService) {
         this.postulacionCommandService = postulacionCommandService;
         this.postulacionQueryService = postulacionQueryService;
         this.usuarioCliente = usuarioCliente;
         this.jwtService = jwtService;
         this.escritorClient = escritorClient;
         this.ilustradorClient = ilustradorClient;
+        this.notificationClient = notificationClient;
+        this.proyectoQueryService = proyectoQueryService;
     }
 
     @Operation(summary = "Crear una postulación", description = "Crea una postulación con los datos proporcionados en el cuerpo de la solicitud")
@@ -86,8 +95,55 @@ public class PostulacionController {
             var result = postulacionCommandService.handle(command);
 
             if (result.isPresent()) {
-                Long postulacionId = result.get().getId();
-                return ResponseEntity.ok().body("Postulación creada con ID: " + postulacionId);
+                var postulacion = result.get();
+                var postulacionResource = PostulacionResourceFromEntityAssembler.toResourceFromEntity(postulacion);
+                
+                // Enviar notificaciones
+                try {
+                    // Obtener información del proyecto
+                    var proyectoOpt = proyectoQueryService.getById(proyectoId);
+                    if (proyectoOpt.isPresent()) {
+                        var proyecto = proyectoOpt.get();
+                        var escritor = escritorClient.obtenerEscritorPorId(proyecto.getEscritorId());
+                        
+                        if (escritor != null) {
+                            // Notificación para el escritor (dueño del proyecto)
+                            var notificationForWriter = new CreateNotificationRequest(
+                                escritor.userId(),
+                                userId,
+                                "PROJECT_APPLICATION",
+                                "Nueva postulación a tu proyecto",
+                                "Un ilustrador se ha postulado a tu proyecto: " + proyecto.getTitulo(),
+                                resource.isPriority() != null && resource.isPriority() ? "HIGH" : "NORMAL",
+                                "PROJECT",
+                                proyectoId,
+                                "/jobs/writer/my-projects/" + proyectoId,
+                                null
+                            );
+                            notificationClient.createNotification(notificationForWriter);
+                        }
+                        
+                        // Notificación para el ilustrador (confirmación)
+                        var notificationForIllustrator = new CreateNotificationRequest(
+                            userId,
+                            userId,
+                            "PROJECT_APPLICATION",
+                            "Postulación enviada exitosamente",
+                            "Tu postulación al proyecto '" + proyecto.getTitulo() + "' ha sido enviada. El escritor la revisará pronto.",
+                            "NORMAL",
+                            "PROJECT",
+                            proyectoId,
+                            "/jobs/" + proyectoId,
+                            null
+                        );
+                        notificationClient.createNotification(notificationForIllustrator);
+                    }
+                } catch (Exception notifEx) {
+                    logger.error("Error al enviar notificaciones: ", notifEx);
+                    // No fallar la postulación si falla la notificación
+                }
+                
+                return ResponseEntity.ok(postulacionResource);
             }
             return ResponseEntity.badRequest().body("Error al crear la postulación.");
         } catch (Exception e) {

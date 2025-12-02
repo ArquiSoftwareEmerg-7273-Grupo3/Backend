@@ -51,6 +51,14 @@ public class EscritorController {
         return ResponseEntity.ok(escritorResource);
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<EscritorResource> getEscritorById(@PathVariable Long id) {
+        var escritor = escritorRepository.findById(id);
+        if (escritor.isEmpty()) return ResponseEntity.notFound().build();
+        var escritorResource = EscritorResourceFromEntityAssembler.toResourceFromEntity(escritor.get());
+        return ResponseEntity.ok(escritorResource);
+    }
+
     // Método auxiliar para extraer userId del UserDetails
     private Long extractUserIdFromUserDetails(UserDetails userDetails) {
         if (userDetails instanceof com.drawnet.artcollab.iam.infrastructure.authorization.sfs.model.UserDetailsImpl userDetailsImpl) {

@@ -17,4 +17,6 @@ public class PreferenceRequest {
     private String email;
     private String firstName;
     private String lastName;
+    private String userId;      // ID del usuario
+    private String userType;    // "ILUSTRADOR" o "ESCRITOR"
 }

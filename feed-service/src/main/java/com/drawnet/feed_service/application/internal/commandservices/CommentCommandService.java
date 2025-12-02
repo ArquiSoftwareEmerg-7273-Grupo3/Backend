@@ -2,9 +2,12 @@ package com.drawnet.feed_service.application.internal.commandservices;
 
 import com.drawnet.feed_service.domain.model.commands.*;
 import com.drawnet.feed_service.domain.model.entities.Comment;
+import com.drawnet.feed_service.infrastructure.clients.NotificationClient;
+import com.drawnet.feed_service.infrastructure.clients.dto.CreateNotificationFromCommentRequest;
 import com.drawnet.feed_service.infrastructure.persistence.jpa.repositories.*;
 import com.drawnet.feed_service.application.services.WebSocketService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,11 +16,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class CommentCommandService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final WebSocketService webSocketService;
+    private final NotificationClient notificationClient;
 
     public Optional<Long> handle(CreateCommentCommand command) {
         return postRepository.findById(command.postId())
@@ -43,6 +48,31 @@ public class CommentCommandService {
                     
                     // Enviar evento WebSocket para actualización en tiempo real
                     webSocketService.sendCommentCreatedEvent(command.postId(), savedComment);
+                    
+                    // Crear notificación (solo si el comentador NO es el autor del post)
+                    if (!post.getUserId().equals(command.userId().toString())) {
+                        try {
+                            CreateNotificationFromCommentRequest notificationRequest = 
+                                new CreateNotificationFromCommentRequest(
+                                    savedComment.getId(),
+                                    command.postId(),
+                                    command.userId(),
+                                    command.content()
+                                );
+                            
+                            notificationClient.createNotificationFromComment(
+                                Long.parseLong(post.getUserId()),
+                                notificationRequest
+                            );
+                            
+                            log.info("Notification created for comment {} on post {}", 
+                                savedComment.getId(), command.postId());
+                        } catch (Exception e) {
+                            // Log pero no fallar la operación principal
+                            log.error("Failed to create notification for comment {} on post {}: {}", 
+                                savedComment.getId(), command.postId(), e.getMessage());
+                        }
+                    }
                     
                     return savedComment.getId();
                 });

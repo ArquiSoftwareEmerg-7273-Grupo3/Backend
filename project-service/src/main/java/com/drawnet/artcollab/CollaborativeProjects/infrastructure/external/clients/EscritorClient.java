@@ -7,4 +7,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 @FeignClient(name = "auth-service-escritor", url = "${auth-service.url:http://localhost:8082}", path = "/api/v1")
 public interface EscritorClient {
     @GetMapping("/escritores/by-user/{userId}")
-    EscritorResource obtenerEscritorPorUserId(@PathVariable Long userId);}
+    EscritorResource obtenerEscritorPorUserId(@PathVariable Long userId);
+    
+    @GetMapping("/escritores/{id}")
+    EscritorResource obtenerEscritorPorId(@PathVariable Long id);
+}

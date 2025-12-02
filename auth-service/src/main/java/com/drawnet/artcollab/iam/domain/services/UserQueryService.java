@@ -6,6 +6,7 @@ import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdAndRolQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByIdWithProfilesQuery;
 import com.drawnet.artcollab.iam.domain.model.queries.GetUserByUsernameQuery;
+import com.drawnet.artcollab.iam.domain.model.queries.SearchUsersByNameQuery;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,4 +17,5 @@ public interface UserQueryService {
     Optional<User> handle(GetUserByUsernameQuery query);
     Optional<User> handle(GetUserByIdAndRolQuery query);
     Optional<User> handle(GetUserByIdWithProfilesQuery query);
+    List<User> handle(SearchUsersByNameQuery query);
 }

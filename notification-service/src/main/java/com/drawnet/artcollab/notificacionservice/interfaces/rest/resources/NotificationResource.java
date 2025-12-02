@@ -4,16 +4,19 @@ import java.time.LocalDateTime;
 
 public record NotificationResource(
         Long id,
-        Long recipientId,
-        Long actorId,
-        Long postId,
-        Long commentId,
-        String type,        // NotificationType como texto
-        String sourceType,  // NotificationSourceType como texto
-        String status,      // NotificationStatus como texto
+        Long recipientUserId,
+        Long actorUserId,
+        String type,
+        String title,
         String message,
-        boolean active,
+        String priority,
+        Boolean isRead,
+        LocalDateTime readAt,
+        Long relatedEntityId,
+        String relatedEntityType,
+        String actionUrl,
         LocalDateTime createdAt,
-        LocalDateTime readAt
+        LocalDateTime expiresAt,
+        Boolean active
 ) {
 }
